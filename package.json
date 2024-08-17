@@ -1,0 +1,15 @@
+{
+  "name": "album-scrobbler",
+  "version": "1.0.0",
+  "description": "Whether you want to scrobble your vinyl records you listen to on last.fm, or you want a quick way to manually scrobble, Album Scrobbler is the desktop app that has the solution for you!",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "author": "Connell Hagen",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.4.0"
+  }
+}
