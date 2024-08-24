@@ -1,0 +1,43 @@
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+svg {
+    vertical-align: middle;
+}
+
+.filter-white {
+    filter: invert(100%);
+}
+
+.nav-link img {
+    width: 32px;
+    height: 32px;
+}
+
+.sidebar {
+    flex-grow: 0;
+    width: 64px;
+    position: fixed;
+    height: 100%;
+    left: 0;
+}
+
+.album-grid {
+    position: relative;
+    left: 64px;
+    width: calc(100% - 64px);
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    justify-content: center;
+}
+
+.album {
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    background-color: gray;
+    margin: 10px
+}

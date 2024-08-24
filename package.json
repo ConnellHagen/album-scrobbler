@@ -11,5 +11,8 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^31.4.0"
+  },
+  "dependencies": {
+    "react": "^18.3.1"
   }
 }
