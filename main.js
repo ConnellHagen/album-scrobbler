@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron');
-
-const path = require('node:path')
+const path = require('node:path');
+const db = require('./js/database.js');
 
 const createWindow = () => {
     const win = new BrowserWindow({
@@ -10,7 +10,9 @@ const createWindow = () => {
             preload: path.join(__dirname, 'preload.js')
         }
     });
-  
+
+    db.init();
+
     win.loadFile('html/collection.html');
 };
 
@@ -22,6 +24,10 @@ app.whenReady().then(() => {
             createWindow();
     });
 });
+
+app.on('before-quit', () => {
+    db.quit();
+})
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin')
