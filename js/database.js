@@ -1,58 +1,102 @@
-const dbName = 'db/albums.sqlite';
-let db;
-
 const fs = require('fs');
 const initSqlJs = require('sql.js');
-const filebuffer = fs.readFileSync(dbName);
+const sharp = require('sharp');
 
-function init() {
-    initSqlJs().then((SQL) => {
-        db = new SQL.Database(filebuffer);
+const dbName = './db/albums.sqlite';
 
-        // return true;
-        return false;
-    }).then((create) => {
-        if (!create)
-            return;
+class Database {
+    static initLock = false;
 
-        createdb();
-    }).catch((err) => {
-        console.log(err);
-    });
+    constructor() {
+        this.filebuffer = fs.readFileSync(dbName);
+        this.db = null;
+        this.initPromise = this.init(); // can be awaited to ensure init() has finished before doing something
+    }
+    
+    async init() {
+        let SQL = await initSqlJs();
+        this.db = new SQL.Database(this.filebuffer);
+        
+        this.insertAlbumStmt = this.db.prepare(`
+            INSERT INTO Albums(Artist, Title, Cover)
+            VALUES (?, ?, ?)  
+        `);
+        this.selectAlbumStmt = this.db.prepare(`
+            SELECT *
+            FROM Albums
+            WHERE Artist = ? AND Title = ? 
+        `);
+        this.selectAllAlbumsStmt = this.db.prepare(`
+            SELECT *
+            FROM Albums
+        `);
+    }
+    
+    async close() {
+        await this.#write();
+        this.db.close();
+        this.db = null;
+    }
+    
+    static async coverFromImage(path) {
+        return (await sharp(path)
+            .resize({
+                width: 200,
+                height: 200,
+                fit: sharp.fit.fill
+            })
+            .toBuffer()
+            .then(data => data)
+        );
+    }
+    
+    async insertAlbum(artist, title, cover) {
+        await this.initPromise;
+
+        this.insertAlbumStmt.bind([artist, title, cover]);
+        this.insertAlbumStmt.run();
+    }
+    
+    async selectAlbum(artist, title) {
+        await this.initPromise;
+
+        this.selectAlbumStmt.bind([artist, title]);
+        this.selectAlbumStmt.step();
+        let row = this.selectAlbumStmt.getAsObject();
+        this.selectAlbumStmt.reset();
+
+        // if there are no rows returned, row.Artist is falsey
+        if (!row.Artist) {
+            return null;
+        } else {
+            return row;
+        }
+    }
+
+    async selectAllAlbums() {
+        await this.initPromise;
+
+        let rows = [];
+        while (this.selectAllAlbumsStmt.step()) {
+            rows.push(this.selectAllAlbumsStmt.get())
+        }
+
+        this.selectAllAlbumsStmt.reset();
+
+        return rows;
+    }
+
+    async #write() {
+        await this.initPromise;
+
+        const data = this.db.export();
+        const buffer = Buffer.from(data);
+        fs.writeFileSync(dbName, buffer);
+    }
+
+    async test() {
+        
+    }
 }
 
-function quit() {
-    console.log('Quitting...');
-    writeDB();
-    console.log('Successfully saved to database');
-    db.close();
-    console.log('Closed database');
-}
-
-function createdb() {
-    var query = ``;
-        // `CREATE TABLE Albums (
-        //     ID      INTEGER PRIMARY KEY,
-        //     Artist  TEXT,
-        //     Title   TEXT,
-        //     Cover   BLOB
-        // );
-        // CREATE TABLE Tracks (
-        //     Artist      TEXT,
-        //     Title       TEXT,
-        //     Length      INTEGER,
-        //     AlbumID     INTEGER,
-        //     FOREIGN KEY(AlbumID)
-        //     REFERENCES Albums(ID)
-        // );`;
-    console.log(db.exec(query));
-}
-
-function writeDB() {
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(dbName, buffer);
-}
-
-exports.init = init;
-exports.quit = quit;
+module.exports = Database;

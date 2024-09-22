@@ -1,19 +1,32 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
 const db = require('./js/database.js');
 
+let mainWindow;
+
 const createWindow = () => {
-    const win = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 1280,
         height: 720,
         webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            enableRemoteModule: false,
+            sandbox: false,
             preload: path.join(__dirname, 'preload.js')
         }
     });
 
-    db.init();
+    mainWindow.on('close', (event) => {
+        event.preventDefault();
 
-    win.loadFile('html/collection.html');
+        mainWindow.webContents.send('close-db');
+        ipcMain.once('db-closed', () => {
+            mainWindow.destroy();
+        });
+    });
+
+    mainWindow.loadFile('html/collection.html');
 };
 
 app.whenReady().then(() => {
@@ -24,10 +37,6 @@ app.whenReady().then(() => {
             createWindow();
     });
 });
-
-app.on('before-quit', () => {
-    db.quit();
-})
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin')

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' data:;">
 
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <link rel="stylesheet" href="../css/collection.css">
@@ -12,9 +12,8 @@
 </head>
 
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+    <script src="../js/bootstrap.bundle.min.js"></script>
+    <script src="../js/collection.js" type="module"></script>
 
     <div class="sidebar">
         <div class="d-flex flex-column flex-shrink-0 bg-body-tertiary h-100">
@@ -41,25 +40,8 @@
             </ul>
         </div>
     </div>
-    <div class="album-grid">
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
-        <div class="album"></div>
+    <div id="album-grid" class="album-grid">
+
     </div>
 </body>
 

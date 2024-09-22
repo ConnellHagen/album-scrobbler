@@ -39,5 +39,6 @@ svg {
     width: 200px;
     border-radius: 10px;
     background-color: gray;
+    background-size: contain;
     margin: 10px
 }
