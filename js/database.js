@@ -12,11 +12,11 @@ class Database {
         this.db = null;
         this.initPromise = this.init(); // can be awaited to ensure init() has finished before doing something
     }
-    
+
     async init() {
         let SQL = await initSqlJs();
         this.db = new SQL.Database(this.filebuffer);
-        
+
         this.insertAlbumStmt = this.db.prepare(`
             INSERT INTO Albums(Artist, Title, Cover)
             VALUES (?, ?, ?)  
@@ -31,13 +31,13 @@ class Database {
             FROM Albums
         `);
     }
-    
+
     async close() {
         await this.#write();
         this.db.close();
         this.db = null;
     }
-    
+
     static async coverFromImage(path) {
         return (await sharp(path)
             .resize({
@@ -49,14 +49,14 @@ class Database {
             .then(data => data)
         );
     }
-    
+
     async insertAlbum(artist, title, cover) {
         await this.initPromise;
 
         this.insertAlbumStmt.bind([artist, title, cover]);
         this.insertAlbumStmt.run();
     }
-    
+
     async selectAlbum(artist, title) {
         await this.initPromise;
 
@@ -95,7 +95,7 @@ class Database {
     }
 
     async test() {
-        
+
     }
 }
 

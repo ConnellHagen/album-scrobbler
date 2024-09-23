@@ -26,7 +26,7 @@ const createWindow = () => {
         });
     });
 
-    mainWindow.loadFile('html/collection.html');
+    mainWindow.loadFile('html/home.html');
 };
 
 app.whenReady().then(() => {
@@ -42,4 +42,3 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin')
         app.quit();
 });
-

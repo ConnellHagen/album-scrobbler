@@ -24,10 +24,23 @@ svg {
     left: 0;
 }
 
-.album-grid {
+.content-display {
     position: relative;
     left: 64px;
     width: calc(100% - 64px);
+    /* background-color: red; */
+    height: 100%;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.album-grid {
     display: flex;
     flex-wrap: wrap;
     padding: 10px;
