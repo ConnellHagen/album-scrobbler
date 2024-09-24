@@ -41,8 +41,8 @@ class Database {
     static async coverFromImage(path) {
         return (await sharp(path)
             .resize({
-                width: 200,
-                height: 200,
+                width: 400,
+                height: 400,
                 fit: sharp.fit.fill
             })
             .toBuffer()

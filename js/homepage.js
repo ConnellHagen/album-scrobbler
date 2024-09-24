@@ -11,6 +11,12 @@ let blobToBase64 = (blob) => {
     return btoa(binaryString);  // Convert binary string to base64
 }
 
+let scrollPositions = {
+    "collection-tab": 0,
+    "manual-add-tab": 0,
+    "search-tab": 0
+};
+
 window.addEventListener("DOMContentLoaded", async () => {
     $("collection-tab-btn").addEventListener("click", (event) => {
         event.preventDefault();
@@ -30,23 +36,34 @@ window.addEventListener("DOMContentLoaded", async () => {
     fillCollectionGrid();
 });
 
-function switchToTab(tabname) {
+window.addEventListener('resize', async () => {
+    adjustCollectionGridSize();
+});
 
-    console.log("here");
+function switchToTab(tabname) {
     let tabButtons = document.querySelectorAll(".tab-btn");
     let tabContents = document.querySelectorAll(".content-display .tab-content");
 
     for (let i = 0; i < tabContents.length; i++) {
+        let currTab = tabContents[i];
+        let currTabBtn = tabButtons[i];
+
         // if the tab is currently active, disable it
-        if (tabContents[i].classList.contains("active")) {
-            tabButtons[i].classList.remove("active");
-            tabContents[i].classList.remove("active");
+        if (currTab.classList.contains("active")) {
+            // save scroll position
+            scrollPositions[currTab.id] = currTab.scrollTop;
+
+            currTabBtn.classList.remove("active");
+            currTab.classList.remove("active");
         }
 
         // if the tab is the one being switched to, activate it
-        if (tabContents[i].id === tabname) {
-            tabButtons[i].classList.add("active");
-            tabContents[i].classList.add("active");
+        if (currTab.id === tabname) {
+            // restore scroll position
+            currTab.scrollTop = scrollPositions[tabname];
+
+            currTabBtn.classList.add("active");
+            currTab.classList.add("active");
         }
     }
 }
@@ -72,4 +89,50 @@ async function fillCollectionGrid() {
 
         grid.appendChild(albumCard);
     }
+
+    // for (let i = 0; i < 24; i++) {
+    //     let albumCard = document.createElement("div");
+    //     albumCard.classList.add("album");
+    //     grid.appendChild(albumCard);
+    // }
+
+    adjustCollectionGridSize();
+}
+
+function adjustCollectionGridSize() {
+    let grid = $("album-grid");
+    let gridWidth = grid.offsetWidth;
+    let numPerRow = Math.floor((gridWidth - 20) / 220);
+
+    let albums = document.querySelectorAll(".album:not(.dummy)");
+    let dummyAlbums = document.querySelectorAll(".album.dummy");
+
+    // add dummy albums to the end so that flex-grow doesn't cause last row to be shaped weird
+    let newTotalDummyAlbums = (numPerRow - (albums.length % numPerRow)) % numPerRow;
+    let dummyAlbumsToAdd = newTotalDummyAlbums - dummyAlbums.length;
+
+    if (dummyAlbumsToAdd > 0) {
+        for (let i = 0; i < dummyAlbumsToAdd; i++) {
+            let dummyAlbum = document.createElement("div");
+            dummyAlbum.classList.add("album");
+            dummyAlbum.classList.add("dummy");
+    
+            grid.appendChild(dummyAlbum);
+        }
+    } else if (dummyAlbumsToAdd < 0) {
+        let dummyAlbumsToRemove = -1 * dummyAlbumsToAdd;
+        for (let i = 0; i < dummyAlbumsToRemove; i++) {
+            grid.removeChild(grid.lastElementChild);
+        }
+    }
+
+    albums = grid.childNodes;
+
+    if (albums.length === 0)
+        return;
+
+    let newHeight = `${albums[0].offsetWidth}px`;
+    albums.forEach((album) => {
+        album.style.height = newHeight;
+    });
 }

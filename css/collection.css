@@ -34,6 +34,8 @@ svg {
 
 .tab-content {
     display: none;
+    max-height: 100vh;
+    overflow: auto;
 }
 
 .tab-content.active {
@@ -44,7 +46,8 @@ svg {
     display: flex;
     flex-wrap: wrap;
     padding: 10px;
-    justify-content: center;
+    justify-content: flex-start;
+    align-content: flex-start;
 }
 
 .album {
@@ -53,5 +56,10 @@ svg {
     border-radius: 10px;
     background-color: gray;
     background-size: contain;
-    margin: 10px
+    margin: 10px;
+    flex-grow: 1;
+}
+
+.album.dummy {
+    background-color: #00000000; /* transparent */
 }
