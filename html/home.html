@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' https: data:;">
 
     <link rel="stylesheet" href="../css/bootstrap.min.css">
-    <link rel="stylesheet" href="../css/collection.css">
+    <link rel="stylesheet" href="../css/homepage.css">
 
     <title>Album Scrobbler</title>
 </head>
@@ -15,9 +15,42 @@
     <script src="../js/bootstrap.bundle.min.js"></script>
     <script src="../js/homepage.js" type="module"></script>
 
+    <div id="signin-popup" class="popup">
+        <div id="signin-popup-card" class="popup-card bg-body">
+            <div class="topbar">
+                <a id="signin-popup-x" href="#"><img src="../img/icons/x.svg" class="filter-white"></a>
+            </div>
+            <div id="signin-popup-content" class="popup-content">
+                <p>Authorize Album Scrobbler by signing in with your<br>last.fm account in the browser window.</p>
+                <p>Click the button below when you are done:</p>
+                <a id="signin-popup-done-btn">Done</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="credentials-popup" class="popup">
+        <div id="credentials-popup-card" class="popup-card bg-body">
+            <div class="topbar">
+                <a id="credentials-popup-x" href="#"><img src="../img/icons/x.svg" class="filter-white"></a>
+            </div>
+            <div id="credentials-popup-content" class="popup-content">
+                <p>Enter your API key and Shared Secret. Instructions on how to obtain these are on the <a href="#">GitHub</a>.</p>
+                <div class="mb-3">
+                    <label for="credentials-apikey-input" class="form-label">API Key:</label>
+                    <input type="text" id="credentials-apikey-input" class="form-control" maxlength="32" aria-describedby="API Key Input">
+                </div>
+                <div class="mb-4">
+                    <label for="credentials-apisecret-input" class="form-label">Shared Secret:</label>
+                    <input type="text" id="credentials-apisecret-input" class="form-control" maxlength="32" aria-describedby="Shared Secret Input">
+                </div>
+                <a id="credentials-popup-save-btn">Save</a>
+            </div>
+        </div>
+    </div>
+
     <div class="sidebar">
-        <div class="d-flex flex-column flex-shrink-0 bg-body-tertiary h-100">
-            <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
+        <div class="d-flex flex-column flex-grow-0 bg-body-tertiary h-100">
+            <ul class="nav nav-pills nav-flush flex-column flex-grow-1 mb-auto text-center">
                 <li class="nav-item">
                     <a href="#" id="collection-tab-btn" class="tab-btn nav-link active py-3 border-bottom rounded-0"
                         aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Collection"
@@ -26,18 +59,55 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="manual-add-tab-btn" class="tab-btn nav-link py-3 border-bottom rounded-0"
+                    <a href="#" id="search-tab-btn" class="tab-btn nav-link py-3 border-bottom rounded-0"
                         data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Search"
                         data-bs-original-title="Search">
                         <img src="../img/icons/search.svg" class="filter-white" />
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="search-tab-btn" class="tab-btn nav-link py-3 border-bottom rounded-0"
+                    <a href="#" id="manual-add-tab-btn" class="tab-btn nav-link py-3 border-bottom rounded-0"
                         data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Add Manually"
                         data-bs-original-title="Add Manually">
                         <img src="../img/icons/plus-square.svg" class="filter-white" />
                     </a>
+                </li>
+            </ul>
+            <ul class="nav nav-pills nav-flush flex-column flex-grow-0 mb-auto text-center">
+                <li>
+                    <div class="border-top">
+                        <a href="#" id="queue-tab-btn" class="tab-btn nav-link py-3 border-bottom rounded-0"
+                            data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Queue"
+                            data-bs-original-title="Queue">
+                            <img src="../img/icons/queue.svg" class="filter-white" />
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div id="account-menu">
+                        <a id="account-dropdown" class="dropbtn" href="#">
+                            <img id="pfp-preview" src="../img/default-pfp.png" class="rounded-circle">
+                        </a>
+                        <div id="account-dropmenu" class="dropmenu bg-light-subtle">
+                            <div id="account-sign-in-menu" class="dropmenu-card shown">
+                                <div class="dropmenu-option top">
+                                    <a id="account-signin-btn">Sign&nbsp;in</a>
+                                </div>
+                                <div class="dropmenu-option bottom">
+                                    <a id="ae-api-info-btn">Add/Edit&nbsp;API&nbsp;Info</a>
+                                </div>
+                            </div>
+                            <div id="account-sign-out-menu" class="dropmenu-card">
+                                <div id="user-info-card">
+                                    <img id="user-info-pfp" src="../img/default-pfp.png" class="rounded-circle">
+                                    <p id="user-info-name">Username</p>
+                                </div>
+                                <div class="dropmenu-option bottom">
+                                    <a id="sign-out-btn">Sign Out</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -47,13 +117,16 @@
             <div id="album-grid" class="album-grid">
             </div>
         </div>
+        <div id="search-tab" class="tab-content">
+            <p>search</p>
+        </div>
         <div id="manual-add-tab" class="tab-content">
             <div>
-                <p>hi</p>
+                <p>manual add</p>
             </div>
         </div>
-        <div id="search-tab" class="tab-content">
-            <p>test</p>
+        <div id="queue-tab" class="tab-content">
+            <p>queue</p>
         </div>
     </div>
 </body>

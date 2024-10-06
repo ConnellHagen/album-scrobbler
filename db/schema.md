@@ -14,4 +14,8 @@ CREATE TABLE Tracks (
     FOREIGN KEY(AlbumID)
     REFERENCES Albums(ID)
 );
+CREATE TABLE User (
+    Username        TEXT,
+    ProfilePicture  BLOB
+);
 ```

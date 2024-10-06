@@ -1,0 +1,261 @@
+@import "./bootstrap.min.css";
+@import "./font.css";
+
+* {
+    font-family: "funnel-sans";
+    font-weight: lighter;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+svg {
+    vertical-align: middle;
+}
+
+.filter-white {
+    filter: invert(100%);
+}
+
+.nav-link img {
+    width: 32px;
+    height: 32px;
+}
+
+#account-menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 64px;
+}
+
+    #account-menu a img {
+        width: 40px;
+        height: 40px;
+    }
+
+.sidebar {
+    flex-grow: 0;
+    width: 64px;
+    position: fixed;
+    height: 100%;
+    left: 0;
+}
+
+.content-display {
+    position: relative;
+    left: 64px;
+    width: calc(100% - 64px);
+    height: 100%;
+    pointer-events: none;
+}
+
+.tab-content {
+    display: none;
+    max-height: 100vh;
+    overflow: auto;
+}
+
+    .tab-content.active {
+        display: block;
+    }
+
+.album-grid {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    justify-content: flex-start;
+    align-content: flex-start;
+}
+
+.album {
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    background-color: gray;
+    background-size: contain;
+    margin: 10px;
+    flex-grow: 1;
+}
+
+    .album.dummy {
+        background-color: #00000000; /* transparent */
+    }
+
+.dropbtn {
+    position: relative;
+}
+
+.dropmenu {
+    display: none;
+    position: absolute;
+    border-radius: 10px;
+    filter: drop-shadow(5px 5px 5px #00000044)
+}
+
+    .dropmenu.shown {
+        display: block;
+    }
+
+#account-dropmenu {
+    left: 20px;
+    bottom: 55px;
+}
+
+.dropmenu-option {
+    display: flex;
+    cursor: pointer;
+}
+
+    .dropmenu-option a {
+        width: 100%;
+        padding: 10px 15px;
+        text-align: left;
+    }
+
+        .dropmenu-option a:hover {
+            background-color: var(--bs-primary);
+        }
+
+        .dropmenu-option.top a {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .dropmenu-option.bottom a {
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+.dropmenu-card {
+    display: none;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
+    .dropmenu-card.shown {
+        display: flex;
+    }
+
+#user-info-card {
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+    #user-info-card p {
+        margin: 0 10px 0 20px;
+        text-align: center;
+    }
+
+#pfp-card {
+    width: 64px;
+    height: 64px;
+    margin-right: 20px
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: #00000088;
+    z-index: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+    .popup.shown {
+        display: flex;
+    }
+
+.popup-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+}
+
+#signin-popup-card p {
+    font-size: 18px;
+}
+
+#signin-popup-card * {
+    text-align: center;
+}
+
+.popup-content {
+    margin: 10px 20px 20px 20px;
+    padding: 10px;
+    height: 100%;
+}
+
+#signin-popup-content {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.topbar {
+    display: flex;
+}
+
+    .topbar a {
+        display: flex;
+        justify-content: center;
+        margin-left: auto;
+        border-top-right-radius: 10px;
+        height: 32px;
+        width: 50px;
+        padding: 4px;
+    }
+
+        .topbar a:hover {
+            background-color: var(--bs-danger);
+        }
+
+#signin-popup-done-btn {
+    width: 200px;
+    height: 50px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    background-color: #eb3434;
+    font-size: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+}
+
+    #signin-popup-done-btn:hover {
+        background-color: #c92c2c;
+    }
+
+#credentials-popup-save-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 40px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    background-color: var(--bs-primary);
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+}
+
+#credentials-popup-content div input {
+    width: 320px;
+    height: 40px;
+}
+
+#credentials-popup-content p {
+    font-size: 16px;
+    max-width: 320px;
+}

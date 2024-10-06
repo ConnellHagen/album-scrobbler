@@ -1,44 +1,79 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
-const db = require('./js/database.js');
+const { hash } = require('node:crypto');
 
 let mainWindow;
 
-const createWindow = () => {
-    mainWindow = new BrowserWindow({
-        width: 1280,
-        height: 720,
-        webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true,
-            enableRemoteModule: false,
-            sandbox: false,
-            preload: path.join(__dirname, 'preload.js')
-        }
-    });
+const singleInstanceLock = app.requestSingleInstanceLock();
 
-    mainWindow.on('close', (event) => {
-        event.preventDefault();
+process.chdir(__dirname);
 
-        mainWindow.webContents.send('close-db');
-        ipcMain.once('db-closed', () => {
-            mainWindow.destroy();
+if (!singleInstanceLock) {
+    app.quit();
+} else {
+
+    const createWindow = () => {
+        mainWindow = new BrowserWindow({
+            width: 1280,
+            height: 720,
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true,
+                enableRemoteModule: false,
+                sandbox: false,
+                preload: path.join(__dirname, 'preload.js')
+            }
+        });
+        
+        mainWindow.on('close', (event) => {
+            event.preventDefault();
+            
+            mainWindow.webContents.send('close-db');
+            ipcMain.once('db-closed', () => {
+                mainWindow.destroy();
+            });
+        });
+        
+        mainWindow.loadFile(path.join(__dirname, 'html/home.html'));
+    };
+    
+    app.whenReady().then(() => {
+        createWindow();
+        
+        app.on('activate', () => {
+            if (BrowserWindow.getAllWindows().length === 0)
+                createWindow();
         });
     });
 
-    mainWindow.loadFile('html/home.html');
-};
+    app.on('second-instance', (event, argv, workingDirectory) => {
+        // focus the existing window
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore();
+            }
 
-app.whenReady().then(() => {
-    createWindow();
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0)
-            createWindow();
+            mainWindow.focus();
+        }
     });
-});
+    
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin')
+            app.quit();
+    });
+    
+    ipcMain.handle('fetch', async (event, url, _method = "GET", _headers = {Accept: 'application/json'}) => {
+        const response = await fetch(url, {
+            method: _method,
+            headers: _headers
+        });
+        const data = await response.json();
+        
+        return JSON.stringify(data);
+    });
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin')
-        app.quit();
-});
+    ipcMain.handle('md5', (event, content) => {
+        return hash('md5', content, 'hex');
+    });
+
+}

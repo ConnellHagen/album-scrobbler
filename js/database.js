@@ -13,6 +13,7 @@ class Database {
         this.initPromise = this.init(); // can be awaited to ensure init() has finished before doing something
     }
 
+    // must be an independent method because the constructor cannot be async and await `initSqlJs()`
     async init() {
         let SQL = await initSqlJs();
         this.db = new SQL.Database(this.filebuffer);
@@ -29,6 +30,10 @@ class Database {
         this.selectAllAlbumsStmt = this.db.prepare(`
             SELECT *
             FROM Albums
+        `);
+        this.setUserStmt = this.db.prepare(`
+            INSERT INTO User(Username, ProfilePicture)
+            VALUES (?, ?)    
         `);
     }
 
@@ -55,6 +60,7 @@ class Database {
 
         this.insertAlbumStmt.bind([artist, title, cover]);
         this.insertAlbumStmt.run();
+        this.insertAlbumStmt.reset();
     }
 
     async selectAlbum(artist, title) {
@@ -78,12 +84,34 @@ class Database {
 
         let rows = [];
         while (this.selectAllAlbumsStmt.step()) {
-            rows.push(this.selectAllAlbumsStmt.get())
+            rows.push(this.selectAllAlbumsStmt.get());
         }
 
         this.selectAllAlbumsStmt.reset();
 
         return rows;
+    }
+
+    async getUser() {
+        await this.initPromise;
+
+        let rows = await this.db.exec(`SELECT * FROM User`);
+        return rows[0];
+    }
+
+    async setUser(name, profilePicture) {
+        await this.initPromise;
+
+        this.db.run(`DELETE FROM User`);
+        this.setUserStmt.bind([name, profilePicture]);
+        this.setUserStmt.run();
+        this.setUserStmt.reset();
+    }
+
+    async removeUser() {
+        await this.initPromise;
+
+        this.db.run(`DELETE FROM User`);
     }
 
     async #write() {
@@ -93,9 +121,34 @@ class Database {
         const buffer = Buffer.from(data);
         fs.writeFileSync(dbName, buffer);
     }
-
+    
+    async createTables() {
+        await this.initPromise;
+        
+        this.db.run(`
+            CREATE TABLE Albums (
+                ID      INTEGER PRIMARY KEY,
+                Artist  TEXT,
+                Title   TEXT,
+                Cover   BLOB
+            );
+            CREATE TABLE Tracks (
+                Artist      TEXT,
+                Title       TEXT,
+                Length      INTEGER,
+                AlbumID     INTEGER,
+                FOREIGN KEY(AlbumID)
+                REFERENCES Albums(ID)
+            );
+            CREATE TABLE User (
+                Username        TEXT,
+                ProfilePicture  BLOB
+            );
+        `);
+    }
+        
     async test() {
-
+        
     }
 }
 

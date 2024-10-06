@@ -1,0 +1,69 @@
+@font-face {
+    font-family: "funnel-sans";
+    src: url("../font/funnel-sans/FunnelSans-Regular.ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* @font-face {
+    font-family: "funnel-sans";
+    src: url("../font/funnel-sans/FunnelSans-Italic.ttf");
+    font-weight: normal;
+    font-style: italic;
+} */
+
+/* @font-face {
+    font-family: "funnel-sans";
+    font-weight: lighter;
+    font-style: normal;
+    src: url("../font/funnel-sans/FunnelSans-Light.ttf");
+}
+
+@font-face {
+    font-family: "funnel-sans";
+    font-weight: lighter;
+    font-style: italic;
+    src: url("../font/funnel-sans/FunnelSans-LightItalic.ttf");
+} */
+
+/* @font-face {
+    font-family: "funnel-sans";
+    font-weight: medium;
+    font-style: normal;
+    src: url("../font/funnel-sans/FunnelSans-Medium.ttf");
+}
+
+@font-face {
+    font-family: "funnel-sans";
+    font-weight: medium;
+    font-style: italic;
+    src: url("../font/funnel-sans/FunnelSans-MediumItalic.ttf");
+} */
+/* 
+@font-face {
+    font-family: "funnel-sans";
+    font-weight: bold;
+    font-style: normal;
+    src: url("../font/funnel-sans/FunnelSans-Bold.ttf");
+}
+
+@font-face {
+    font-family: "funnel-sans";
+    font-weight: bold;
+    font-style: italic;
+    src: url("../font/funnel-sans/FunnelSans-BoldItalic.ttf");
+} */
+
+/* @font-face {
+    font-family: "funnel-sans";
+    font-weight: bolder;
+    src: url("../font/funnel-sans/FunnelSans-ExtraBold.ttf");
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "funnel-sans";
+    src: url("../font/funnel-sans/FunnelSans-ExtraBoldItalic.ttf");
+    font-weight: bolder;
+    font-style: italic;
+} */
