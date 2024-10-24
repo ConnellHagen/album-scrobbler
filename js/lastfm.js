@@ -1,5 +1,5 @@
-const { ipcRenderer, shell } = require('electron');
-const keytar = require('keytar');
+const { ipcRenderer, shell } = require("electron");
+const keytar = require("keytar");
 
 const API_ROOT = "http://ws.audioscrobbler.com/2.0/";
 
@@ -9,27 +9,27 @@ class LastFM {
     }
 
     async getAPIKey() {
-        return await keytar.getPassword('AlbumScrobbler', 'APIKey');
+        return await keytar.getPassword("AlbumScrobbler", "APIKey");
     }
 
     async setAPIKey(key) {
-        await keytar.setPassword('AlbumScrobbler', 'APIKey', key);
+        await keytar.setPassword("AlbumScrobbler", "APIKey", key);
     }
     
     async getAPISecret() {
-        return await keytar.getPassword('AlbumScrobbler', 'APISecret');
+        return await keytar.getPassword("AlbumScrobbler", "APISecret");
     }
 
     async setAPISecret(secret) {
-        await keytar.setPassword('AlbumScrobbler', 'APISecret', secret);
+        await keytar.setPassword("AlbumScrobbler", "APISecret", secret);
     }
 
     async getSessionKey() {
-        return await keytar.getPassword('AlbumScrobbler', 'SessionKey')
+        return await keytar.getPassword("AlbumScrobbler", "SessionKey")
     }
 
     async setSessionKey(key) {
-        await keytar.setPassword('AlbumScrobbler', 'SessionKey', key);
+        await keytar.setPassword("AlbumScrobbler", "SessionKey", key);
     }
     
     async getRequestToken() {
@@ -80,7 +80,7 @@ class LastFM {
     }
 
     async endSession() {
-        await keytar.deletePassword('AlbumScrobbler', 'SessionKey')
+        await keytar.deletePassword("AlbumScrobbler", "SessionKey")
     }
 
     async isSession() {
@@ -89,7 +89,7 @@ class LastFM {
     }
 
     static async md5(input) {
-        return await ipcRenderer.invoke('md5', input);
+        return await ipcRenderer.invoke("md5", input);
     }
 
     async createSignature(params) {

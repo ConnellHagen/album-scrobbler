@@ -5,18 +5,21 @@ const LastFM = require("./js/lastfm.js");
 const db = new Database();
 const lastfm = new LastFM();
 
-contextBridge.exposeInMainWorld('db', {
+contextBridge.exposeInMainWorld("db", {
     getAlbum: (artist, title) => db.selectAlbum(artist, title),
+    getAlbumByID: (albumID) => db.selectAlbumByID(albumID),
     getAllAlbums: () => db.selectAllAlbums(),
     addAlbum: (artist, title, cover) => db.insertAlbum(artist, title, cover),
     coverFromImage: (path) => Database.coverFromImage(path),
     getUser: () => db.getUser(),
     setUser: (name, pfp) => db.setUser(name, pfp),
-    removeUser: () => db.removeUser()
+    removeUser: () => db.removeUser(),
+    clearTracks: (albumID) => db.removeTracks(albumID),
+    addAlbumTracks: (albumID, tracks) => db.addTracks(albumID, tracks)
     // , test: () => db.test()
 });
 
-contextBridge.exposeInMainWorld('lastfm', {
+contextBridge.exposeInMainWorld("lastfm", {
     requestAuth: () => lastfm.requestAuth(),
     createSession: () => lastfm.createSession(),
     getAPIKey: () => lastfm.getAPIKey(),
@@ -28,11 +31,11 @@ contextBridge.exposeInMainWorld('lastfm', {
     endSession: () => lastfm.endSession()
 });
 
-ipcRenderer.on('close-db', async () => {
+ipcRenderer.on("close-db", async () => {
     try {
         db.close();
-        ipcRenderer.send('db-closed');
+        ipcRenderer.send("db-closed");
     } catch (error) {
-        console.error('Error while closing the database: ', error);
+        console.error("Error while closing the database: ", error);
     }
 });

@@ -1,8 +1,8 @@
-const fs = require('fs');
-const initSqlJs = require('sql.js');
-const sharp = require('sharp');
+const fs = require("fs");
+const initSqlJs = require("sql.js");
+const sharp = require("sharp");
 
-const dbName = './db/albums.sqlite';
+const dbName = "./db/albums.sqlite";
 
 class Database {
     static initLock = false;
@@ -20,20 +20,39 @@ class Database {
 
         this.insertAlbumStmt = this.db.prepare(`
             INSERT INTO Albums(Artist, Title, Cover)
-            VALUES (?, ?, ?)  
+            VALUES (?, ?, ?)
+        `);
+        this.updateAlbumStmt = this.db.prepare(`
+            UPDATE Albums
+            SET Cover = ?, Artist = ?, Title = ?
+            WHERE ID = ?
         `);
         this.selectAlbumStmt = this.db.prepare(`
             SELECT *
             FROM Albums
             WHERE Artist = ? AND Title = ? 
         `);
+        this.selectAlbumFromIDStmt = this.db.prepare(`
+            SELECT *
+            FROM Albums
+            WHERE ID = ?
+        `);
         this.selectAllAlbumsStmt = this.db.prepare(`
             SELECT *
             FROM Albums
         `);
+        this.removeTracksStmt = this.db.prepare(`
+            DELETE
+            FROM Tracks
+            WHERE AlbumID = ?
+        `);
+        this.addTracksStmt = this.db.prepare(`
+            INSERT INTO Tracks(AlbumID, TrackNum, Artist, Title, Length)
+            VALUES (?, ?, ?, ?, ?)
+        `);
         this.setUserStmt = this.db.prepare(`
             INSERT INTO User(Username, ProfilePicture)
-            VALUES (?, ?)    
+            VALUES (?, ?)
         `);
     }
 
@@ -55,12 +74,34 @@ class Database {
         );
     }
 
+    // returns null if did not insert successfully
     async insertAlbum(artist, title, cover) {
         await this.initPromise;
 
-        this.insertAlbumStmt.bind([artist, title, cover]);
-        this.insertAlbumStmt.run();
-        this.insertAlbumStmt.reset();
+        if (!artist || !title) {
+            return null;
+        }
+
+        let existing = await this.selectAlbum(artist, title);
+        if (existing) {
+            await this.updateAlbum(existing["ID"], artist, title, cover);
+            return existing["ID"];
+        }
+
+        this.insertAlbumStmt.run([artist, title, cover]);
+        let results = await this.selectAlbum(artist, title);
+
+        if (results) {
+            return results["ID"];
+        }   
+
+        return null;
+    }
+
+    async updateAlbum(id, artist, title, cover) {
+        await this.initPromise;
+        
+        this.updateAlbumStmt.run([cover, artist, title, id]);
     }
 
     async selectAlbum(artist, title) {
@@ -70,6 +111,22 @@ class Database {
         this.selectAlbumStmt.step();
         let row = this.selectAlbumStmt.getAsObject();
         this.selectAlbumStmt.reset();
+
+        // if there are no rows returned, row.Artist is falsey
+        if (!row.Artist) {
+            return null;
+        } else {
+            return row;
+        }
+    }
+
+    async selectAlbumByID(albumID) {
+        await this.initPromise;
+
+        this.selectAlbumFromIDStmt.bind([albumID]);
+        this.selectAlbumFromIDStmt.step();
+        let row = this.selectAlbumFromIDStmt.getAsObject();
+        this.selectAlbumFromIDStmt.reset();
 
         // if there are no rows returned, row.Artist is falsey
         if (!row.Artist) {
@@ -92,10 +149,33 @@ class Database {
         return rows;
     }
 
+    async removeTracks(albumID) {
+        this.removeTracksStmt.run([albumID]);
+    }
+
+    async addTracks(albumID, tracks) {
+        let albumInfo = await this.selectAlbumByID(albumID);
+        if (!albumInfo) {
+            return;
+        }
+
+        tracks.forEach(track => {
+            const params = [
+                albumID,
+                track["num"],
+                track["artist"] ? track["artist"] : albumInfo["Artist"],
+                track["title"] ? track["title"] : `Track ${track["num"]}`,
+                track["length"] ? track["length"] : 180
+            ];
+
+            this.addTracksStmt.run(params);
+        });
+    }
+
     async getUser() {
         await this.initPromise;
 
-        let rows = await this.db.exec(`SELECT * FROM User`);
+        let rows = this.db.exec(`SELECT * FROM User`);
         return rows[0];
     }
 
@@ -103,9 +183,7 @@ class Database {
         await this.initPromise;
 
         this.db.run(`DELETE FROM User`);
-        this.setUserStmt.bind([name, profilePicture]);
-        this.setUserStmt.run();
-        this.setUserStmt.reset();
+        this.setUserStmt.run([name, profilePicture]);
     }
 
     async removeUser() {
@@ -133,6 +211,7 @@ class Database {
                 Cover   BLOB
             );
             CREATE TABLE Tracks (
+                TrackNum    INTEGER,
                 Artist      TEXT,
                 Title       TEXT,
                 Length      INTEGER,
@@ -148,7 +227,7 @@ class Database {
     }
         
     async test() {
-        
+        await this.initPromise;
     }
 }
 

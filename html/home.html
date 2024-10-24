@@ -7,6 +7,8 @@
 
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <link rel="stylesheet" href="../css/homepage.css">
+    <link rel="stylesheet" href="../css/collection.css">
+    <link rel="stylesheet" href="../css/manual-add.css">
 
     <title>Album Scrobbler</title>
 </head>
@@ -118,17 +120,59 @@
             </div>
         </div>
         <div id="search-tab" class="tab-content">
-            <p>search</p>
+            <h1>search</h1>
         </div>
         <div id="manual-add-tab" class="tab-content">
+            <div id="ma-album-info" class="manual-add-section">
+                <div id="ma-album-select">
+                    <div id="ma-album-cover" ></div>
+                    <div id="ma-album-camera-icon">
+                        <img class="filter-white" src="../img/icons/camera-fill.svg">
+                    </div>
+                </div>
+                <div id="ma-album-fields">
+                    <input id="ma-album-title" class="entry-field" type="text" value="" placeholder="Album Title">
+                    <input id="ma-album-artist" class="entry-field" type="text" value="" placeholder="Album Artist">
+                </div>
+            </div>
+            <div id="ma-track-info" class="manual-add-section">
+                <table id="ma-track-info-form" class="draggable-table">
+                    <colgroup>
+                        <col span="1">
+                        <col span="1">
+                        <col span="1">
+                        <col span="1">
+                        <col span="1">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Track</th>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Length</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
             <div>
-                <p>manual add</p>
+                <div id="ma-add-track-btn">
+                    <a><img src="../img/icons/plus.svg" class="filter-white"></a>
+                </div>
+                <div class="button-row">
+                    <a id="ma-reset-btn" class="form-btn danger-btn">Reset</a>
+                    <a id="ma-save-btn" class="form-btn primary-btn">Save</a>
+                </div>
             </div>
         </div>
         <div id="queue-tab" class="tab-content">
-            <p>queue</p>
+            <h1>queue</h1>
         </div>
     </div>
+
+    <!--Inputs-->
+    <input type="file" id="ma-album-cover-input" class="file-upload" accept="image/*">
 </body>
 
 </html>

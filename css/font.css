@@ -39,15 +39,15 @@
     font-style: italic;
     src: url("../font/funnel-sans/FunnelSans-MediumItalic.ttf");
 } */
-/* 
+
 @font-face {
-    font-family: "funnel-sans";
-    font-weight: bold;
+    font-family: "funnel-sans-bold";
+    /* font-weight: bold; */
     font-style: normal;
     src: url("../font/funnel-sans/FunnelSans-Bold.ttf");
 }
 
-@font-face {
+/* @font-face {
     font-family: "funnel-sans";
     font-weight: bold;
     font-style: italic;

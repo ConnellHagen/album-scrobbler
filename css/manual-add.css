@@ -1,0 +1,209 @@
+@import "./bootstrap.min.css";
+@import "./font.css";
+
+#manual-add-tab {
+    padding: 10px;
+}
+
+.manual-add-section {
+    margin: 10px;
+}
+
+.manual-add-section:first-child {
+    margin-bottom: 0;
+}
+
+.draggable-table {
+    position: relative;
+}
+    
+    .draggable-table .draggable-table__drag {
+        position: absolute;
+        width: 100%;
+        border: none;
+        z-index: 10;
+        cursor: grabbing;
+    }
+    
+    .draggable-table tbody {
+        height: 100%;
+        overflow-y: scroll;
+    }
+
+    .draggable-table tbody tr {
+        cursor: grabbing;
+        height: 36px;
+    }
+
+    .draggable-table tbody tr td {
+        padding: 10px;
+    }
+
+.entry-field {
+    width: 100%;
+    text-align: left;
+    margin: 0;
+    background-color: transparent;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+
+#ma-album-info {
+    display: flex;
+    flex-direction: row;
+}
+
+#ma-album-fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 10px;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+#ma-album-title {
+    font-size: 40px;
+}
+
+#ma-album-artist {
+    font-size: 32px;
+}
+
+#ma-track-info {
+    flex-grow: 1;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
+}
+
+#ma-track-info-form {
+    width: 100%;
+}
+
+    #ma-track-info-form col:nth-child(1) {
+        width: 40px;
+    }
+    #ma-track-info-form col:nth-child(2) {
+        width: 80px;
+    }
+    #ma-track-info-form col:nth-child(3) {
+        width: 50%;
+    }
+    #ma-track-info-form col:nth-child(4) {
+        width: auto;
+        min-width: 120px;
+    }
+    #ma-track-info-form col:nth-child(5) {
+        width: 80px;
+    }
+
+    #ma-track-info-form td {
+        padding: 5px;
+    }
+
+    #ma-track-info-form th {
+        padding: 5px;
+        font-family: "funnel-sans-bold";
+        font-size: 18px;
+    }
+
+    #ma-track-info-form tbody tr {
+        border-radius: 5px;
+    }
+    
+    #ma-track-info-form tbody tr:hover {
+        background-color: var(--bs-primary);
+        border-radius: 5px;
+    }
+
+    #ma-track-info-form tbody td:first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    #ma-track-info-form tbody td:last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+.track-info-x {
+    width: 20px;
+    height: 20px;
+}
+
+    .track-info-x:hover {
+        cursor: pointer;
+        filter: invert(80%);
+    }
+
+#ma-album-cover {
+    border-radius: 10px;
+    width: 250px;
+    height: 250px;
+    background-size: cover;
+    background-image: url("../img/default-cover.png");
+}
+
+#ma-album-select {
+    position: relative;
+    margin-right: 10px;
+}
+
+    #ma-album-camera-icon  {
+        display: none;
+        position: absolute;
+        width: 250px;
+        height: 250px;
+        top: -0px;
+        border-radius: 10px;
+        background-color: #00000088;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+        #ma-album-camera-icon img {
+            width: 100px;
+            height: 100px;
+        }
+
+    #ma-album-select:hover #ma-album-camera-icon {
+        display: flex;
+    }
+
+#ma-add-track-btn {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    cursor: pointer;
+    margin: 10px;
+    margin-bottom: 0;
+}
+
+#ma-add-track-btn a {
+    background-color: transparent;
+    border: 2px #474747 solid;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 210px;
+    max-width: 210px;
+}
+
+    #ma-add-track-btn a:hover {
+        background-color: #474747;
+    }
+
+    #ma-add-track-btn a:active {
+        background-color: #3F3F3F;
+    }
+
+    #ma-add-track-btn a img {
+        height: 22px;
+        width: 22px;
+        margin: 2px;
+    }

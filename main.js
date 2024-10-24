@@ -1,6 +1,6 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('node:path');
-const { hash } = require('node:crypto');
+const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("node:path");
+const { hash } = require("node:crypto");
 
 let mainWindow;
 
@@ -21,32 +21,32 @@ if (!singleInstanceLock) {
                 contextIsolation: true,
                 enableRemoteModule: false,
                 sandbox: false,
-                preload: path.join(__dirname, 'preload.js')
+                preload: path.join(__dirname, "preload.js")
             }
         });
         
-        mainWindow.on('close', (event) => {
+        mainWindow.on("close", (event) => {
             event.preventDefault();
             
-            mainWindow.webContents.send('close-db');
-            ipcMain.once('db-closed', () => {
+            mainWindow.webContents.send("close-db");
+            ipcMain.once("db-closed", () => {
                 mainWindow.destroy();
             });
         });
         
-        mainWindow.loadFile(path.join(__dirname, 'html/home.html'));
+        mainWindow.loadFile(path.join(__dirname, "html/home.html"));
     };
     
     app.whenReady().then(() => {
         createWindow();
         
-        app.on('activate', () => {
+        app.on("activate", () => {
             if (BrowserWindow.getAllWindows().length === 0)
                 createWindow();
         });
     });
 
-    app.on('second-instance', (event, argv, workingDirectory) => {
+    app.on("second-instance", (event, argv, workingDirectory) => {
         // focus the existing window
         if (mainWindow) {
             if (mainWindow.isMinimized()) {
@@ -57,12 +57,12 @@ if (!singleInstanceLock) {
         }
     });
     
-    app.on('window-all-closed', () => {
-        if (process.platform !== 'darwin')
+    app.on("window-all-closed", () => {
+        if (process.platform !== "darwin")
             app.quit();
     });
     
-    ipcMain.handle('fetch', async (event, url, _method = "GET", _headers = {Accept: 'application/json'}) => {
+    ipcMain.handle("fetch", async (event, url, _method = "GET", _headers = {Accept: "application/json"}) => {
         const response = await fetch(url, {
             method: _method,
             headers: _headers
@@ -72,8 +72,8 @@ if (!singleInstanceLock) {
         return JSON.stringify(data);
     });
 
-    ipcMain.handle('md5', (event, content) => {
-        return hash('md5', content, 'hex');
+    ipcMain.handle("md5", (event, content) => {
+        return hash("md5", content, "hex");
     });
 
 }
