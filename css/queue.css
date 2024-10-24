@@ -1,0 +1,10 @@
+@import "./bootstrap.min.css";
+@import "./font.css";
+
+#queue-tab div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}

@@ -2,7 +2,7 @@
 
 Album Scrobbler is a desktop application that allows for the
 quick scrobbling of albums, or collections of selected songs
-on [last.fm](last.fm). This is especially useful for people
+on [last.fm](https://www.last.fm/). This is especially useful for people
 who listen to music in a way that doesn't get automatically 
 scrobbled, or who have issues with an auto-scrobbler breaking
 from time to time.
