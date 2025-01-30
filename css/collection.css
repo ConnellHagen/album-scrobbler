@@ -10,11 +10,12 @@
 }
 
 .album {
+    position: relative;
+    display: flex;
     height: 200px;
     width: 200px;
     border-radius: 10px;
     background-color: gray;
-    background-size: contain;
     margin: 10px;
     flex-grow: 1;
 }
@@ -22,6 +23,45 @@
     .album.dummy {
         background-color: transparent;
     }
+
+    .album-image {
+        display: block;
+        flex-grow: 1;
+        border-radius: 10px;
+        background-size: contain;
+    }
+
+    .album .album-overlay {
+        display: none;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        background-color: #00000044;
+        border-radius: 10px;
+        height: inherit;
+        width: inherit;
+        flex-grow: 1;
+    }
+
+        .album:hover .album-overlay {
+            display: flex;
+        }
+        
+        .album-overlay a {
+            border-radius: 50px;
+            background-color: #00000044;
+        }
+
+            .album-overlay a:hover {
+                transition: 0.5s;
+                background-color: #000000BB;
+                cursor: pointer;
+            }
+    
+        .album-overlay img {
+            width: 90px;
+            height: 90px;
+        }
 
 .dropbtn {
     position: relative;

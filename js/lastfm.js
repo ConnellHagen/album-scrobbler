@@ -31,12 +31,38 @@ class LastFM {
     async setSessionKey(key) {
         await keytar.setPassword("AlbumScrobbler", "SessionKey", key);
     }
+
+    /* for testing purposes only
+       */
+    async testSessionKeyValid() {
+        const API_KEY = await this.getAPIKey();
+        const SESSION_KEY = await this.getSessionKey();
+
+        let params = {
+            "method": "track.love",
+            "api_key": API_KEY,
+            "sk": SESSION_KEY,
+            "artist": "J Dilla",
+            "track": "Waves"
+        }
+
+        let sig = await this.createSignature(params);
+        params["api_sig"] = sig;
+        params["format"] = "json";
+
+        let response = await ipcRenderer.invoke("fetchPOST", API_ROOT, params);
+        // console.log(response);
+        let data = JSON.parse(response);
+        // console.log("DATA:")
+        // console.log(data)
+
+    }
     
     async getRequestToken() {
         const API_KEY = await this.getAPIKey();
         const endpoint = `${API_ROOT}?method=auth.gettoken&api_key=${API_KEY}&format=json`;
         
-        const response = await ipcRenderer.invoke("fetch", endpoint, "GET");
+        const response = await ipcRenderer.invoke("fetchGET", endpoint);
         let obj = JSON.parse(response);
         this.token = obj["token"];
     }
@@ -64,28 +90,74 @@ class LastFM {
 
         let sig = await this.createSignature(params);
 
-        let endpoint = `${API_ROOT}?method=auth.getSession&api_key=${API_KEY}&token=${this.token}&api_sig=${sig}&format=json`;4
-        let response = await ipcRenderer.invoke("fetch", endpoint, "GET");
+        let endpoint = `${API_ROOT}?method=auth.getSession&api_key=${API_KEY}&token=${this.token}&api_sig=${sig}&format=json`;
+        let response = await ipcRenderer.invoke("fetchGET", endpoint);
         let data = JSON.parse(response);
         const username = data.session.name;
         const key = data.session.key;
 
         endpoint = `${API_ROOT}?method=user.getInfo&user=${username}&api_key=${API_KEY}&format=json`;
-        response = await ipcRenderer.invoke("fetch", endpoint, "GET");
+        response = await ipcRenderer.invoke("fetchGET", endpoint);
         data = JSON.parse(response);
         let pfp = data.user.image[1]["#text"];
 
         await this.setSessionKey(key);
         return [username, pfp]
     }
+    
+    async isSession() {
+        const sessionKey = await this.getSessionKey();
+        return sessionKey != null;
+    }
 
     async endSession() {
         await keytar.deletePassword("AlbumScrobbler", "SessionKey")
     }
 
-    async isSession() {
-        const sessionKey = await this.getSessionKey();
-        return sessionKey != null;
+    // procondition: all 4 parameter arrays must be the same length
+    async sendScrobbles(tracks, artists, albums, albumArtists, timestamps) {
+        let API_KEY = await this.getAPIKey();
+        let SESSION_KEY = await this.getSessionKey();
+
+        let arrayLength = artists.length;
+
+        let params = {
+            "method": "track.scrobble",
+            "api_key": API_KEY,
+            "sk": SESSION_KEY
+        }
+
+        for (let i = 0; i < arrayLength; i++) {
+            let paramNames = [
+                `track[${i}]`,
+                `artist[${i}]`,
+                `album[${i}]`,
+                `albumArtist[${i}]`,
+                `timestamp[${i}]`
+            ];
+            let values = [
+                tracks[i],
+                artists[i],
+                albums[i],
+                albumArtists[i],
+                timestamps[i]
+            ];
+
+            for (let j = 0; j < paramNames.length; j++) {
+                params[paramNames[j]] = values[j];
+            }
+        }
+
+        let sig = await this.createSignature(params);
+        params["api_sig"] = sig;
+        params["format"] = "json";
+
+        let response = await ipcRenderer.invoke("fetchPOST", API_ROOT, params);
+        let data = JSON.parse(response);
+
+        console.log(data["scrobbles"]["@attr"].ignored);
+
+        return true; // success
     }
 
     static async md5(input) {
@@ -99,7 +171,6 @@ class LastFM {
             .forEach((v, i) => {                
                 signature += v;
                 signature += params[v];
-                
             });
         signature += await this.getAPISecret();
         return LastFM.md5(signature);

@@ -1,10 +1,120 @@
 @import "./bootstrap.min.css";
 @import "./font.css";
 
-#queue-tab div {
+span {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#queue-tab {
+    padding: 10px;
+}
+
+#queue-heading {
+    margin: 10px;
+}
+
+#queue-grid {
+    display: flex;
+}
+
+#queue-track-list {
+    flex-grow: 1;
+    overflow-y: scroll;
+    scrollbar-width: none;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
 }
+
+#queue-track-info {
+    width: 100%;
+}
+
+    #queue-track-info col:nth-child(1) {
+        width: 36px;
+    }
+
+    #queue-track-info col:nth-child(2) {
+        width: 36px;
+    }
+
+    #queue-track-info col:nth-child(3) {
+        width: 50%;
+    }
+
+    #queue-track-info col:nth-child(4) {
+        width: 20%;
+        min-width: 120px;
+    }
+
+    #queue-track-info col:nth-child(5) {
+        width: auto;
+        min-width: 120px;
+    }
+
+    #queue-track-info col:nth-child(6) {
+        width: 80px;
+    }
+
+    #queue-track-info td {
+        padding: 5px;
+    }
+
+    #queue-track-info th {
+        padding: 5px;
+        font-family: "funnel-sans-bold";
+        font-size: 18px;
+    }
+
+    #queue-track-info tbody tr {
+        border-radius: 5px;
+    }
+    
+    #queue-track-info tbody tr:hover {
+        background-color: var(--bs-primary);
+        border-radius: 5px;
+    }
+
+    #queue-track-info tbody td:first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    #queue-track-info tbody td:last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+.cover-preview {
+    background-size: contain;
+    border-radius: 5px;
+    height: 32px;
+    width: 32px;
+}
+
+
+.draggable-table {
+    position: relative;
+}
+    
+    .draggable-table .draggable-table__drag {
+        position: absolute;
+        width: 100%;
+        border: none;
+        z-index: 10;
+        cursor: grabbing;
+    }
+    
+    .draggable-table tbody {
+        height: 100%;
+        overflow-y: scroll;
+    }
+
+    .draggable-table tbody tr {
+        cursor: grabbing;
+        height: 36px;
+    }
+
+    .draggable-table tbody tr td {
+        padding: 10px;
+    }

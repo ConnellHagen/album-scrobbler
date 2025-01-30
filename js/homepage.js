@@ -33,19 +33,43 @@ let scrollPositions = {
     "queue-tab": 0
 };
 
-let table = null;
-let tbody = null;
-let currRow = null;
-let dragElem = null;
 let mouseDownX = 0;
-let mouseDownY = 0;        
+let mouseDownY = 0;
 let mouseX = 0;
-let mouseY = 0; 
-let mouseDrag = false; 
+let mouseY = 0;
+let mouseDrag = false;
+
+class DragTable {
+    constructor() {
+        this.tbody = null;
+        this.currRow = null;
+        this.dragElem = null;
+    }
+}
+
+let manualAddDragTable = new DragTable();
+let queueDragTable = new DragTable();
+
+class QueueItem {
+    constructor(coverURL, title, artist, album, albumArtist, trackLength) {
+        this.coverURL = coverURL ? coverURL : null;
+        this.title = title ? title : null;
+        this.artist = artist ? artist : null;
+        this.album = album ? album : null;
+        this.albumArtist = albumArtist ? albumArtist : null;
+        this.trackLength = trackLength ? trackLength : null;
+    }
+
+    getColFormat() {
+        return [this.coverURL, this.title, this.artist, this.album, this.trackLength]
+    }
+}
+
+let queueContents = []
 
 window.addEventListener("DOMContentLoaded", async () => {
-    table = $('ma-track-info');
-    tbody = table.querySelector('tbody');
+    manualAddDragTable.tbody = $("ma-track-info").querySelector('tbody');
+    queueDragTable.tbody = $("queue-track-info").querySelector('tbody');
 
     let tabs = ["search", "manual-add", "queue"];
     for (let i = 0; i < tabs.length; i++) {
@@ -53,10 +77,10 @@ window.addEventListener("DOMContentLoaded", async () => {
             switchToTab(`${tabs[i]}-tab`);
         });
     }
+
     $("collection-tab-btn").addEventListener("click", (event) => {
         switchToTab(`collection-tab`);
         adjustCollectionGridSize();
-        console.log("scroll top: " + scrollPositions["collection-tab"])
         $("collection-tab").scrollTop = scrollPositions["collection-tab"];
     });
 
@@ -113,6 +137,16 @@ window.addEventListener("DOMContentLoaded", async () => {
         resetManualAddAlbum();
     });
 
+    $("queue-clear-btn").addEventListener("click", (event) => {
+        queueDragTable.tbody.innerHTML = "";
+
+        window.lastfm.testSessionKeyValid();
+    });
+
+    $("queue-scrobble-btn").addEventListener("click", (event) => {
+        scrobbleQueue();
+    });
+
     // stop icons from being able to be "dragged"
     document.addEventListener("dragstart", function(event) {
         event.preventDefault();
@@ -152,8 +186,6 @@ function switchToTab(tabname) {
             // save scroll position
             scrollPositions[currTab.id] = currTab.scrollTop;
 
-            console.log("scrollpos:" + currTab.scrollTop)
-
             currTabBtn.classList.remove("active");
             currTab.classList.remove("active");
         }
@@ -177,6 +209,7 @@ async function fillCollectionGrid() {
 
     for (let i = 0; i < allAlbums.length; i++) {
         let album = allAlbums[i];
+        let albumID = album[0];
         let artist = album[1];
         let title = album[2];
         let coverBlob = album[3];
@@ -190,9 +223,35 @@ async function fillCollectionGrid() {
         }
         let url = `url("data:image/jpg;base64,${base64Image}")`;
 
+        let albumImage = document.createElement("div");
+        albumImage.classList.add("album-image");
+        albumImage.style.backgroundImage = url;
+
+        let albumOverlay = document.createElement("div");
+        albumOverlay.classList.add("album-overlay");
+        let overlayAddButton = document.createElement("a");
+        overlayAddButton.addEventListener("click", async () => {
+            let albumTracks = await window.db.getTracks(albumID);
+            albumTracks.forEach(track => {
+                let queueTrack = new QueueItem(url, track[1], track[0], title, artist, track[2]);
+                addQueueTrack(queueTrack);
+            });
+        });
+        overlayDeleteButton.addEventListener("click", async () => {
+            window.db.deleteAlbumByID(albumID);
+            // also remove album from the gui.
+            adjustCollectionGridSize();
+        });
+        let plusIcon = document.createElement("img");
+        plusIcon.src = "../img/icons/plus.svg";
+        plusIcon.classList.add("filter-white");
+        overlayAddButton.appendChild(plusIcon);
+        albumOverlay.appendChild(overlayAddButton);
+
         let albumCard = document.createElement("div");
         albumCard.classList.add("album");
-        albumCard.style.backgroundImage = url;
+        albumCard.appendChild(albumImage);
+        albumCard.appendChild(albumOverlay);
 
         grid.appendChild(albumCard);
     }
@@ -204,7 +263,6 @@ async function addAlbumToCollectionGrid(albumID) {
     let grid = $("album-grid");
 
     let album = await window.db.getAlbumByID(albumID);
-    console.log(album)
     let artist = album["Artist"];
     let title = album["Title"];
     let coverBlob = album["Cover"];
@@ -231,7 +289,7 @@ async function addAlbumToCollectionGrid(albumID) {
 
     // to adjust the number of dummy albums
     adjustCollectionGridSize();
-}
+}           
 
 // modifies the height of the albums in the grid and
 // adds invisible dummy albums to the end to stop albums
@@ -263,14 +321,16 @@ function adjustCollectionGridSize() {
         }
     }
 
-    albums = grid.childNodes;
+    albums = grid.querySelectorAll(".album:not(.dummy)");
 
-    if (albums.length === 0)
+    if (albums.length === 0) {
         return;
+    }
 
     let newHeight = `${albums[0].offsetWidth}px`;
     albums.forEach((album) => {
         album.style.height = newHeight;
+        album.children[1].style.width = newHeight; // for giving the overlay the update in its width as well as height
     });
 }
 
@@ -349,10 +409,20 @@ async function signOut() {
     $("account-sign-out-menu").classList.remove("shown");
 }
 
-function removeDraggableRows() {
-    let dragRows = tbody.querySelectorAll(".draggable-table__drag");
+function getCurrentTabDragTable() {
+    if ($("queue-tab").classList.contains("active")) {
+        return queueDragTable;
+    } else if ($("manual-add-tab").classList.contains("active")) {
+        return manualAddDragTable;
+    }
+
+    return null;
+}
+
+function removeDraggableRows(table) {
+    let dragRows = table.tbody.querySelectorAll(".draggable-table__drag");
     for (let i = 0; i < dragRows.length; i++) {
-        tbody.removeChild(dragRows[i]);
+        table.tbody.removeChild(dragRows[i]);
     }
 }
 
@@ -364,11 +434,17 @@ function bindMouse() {
         
         let target = getTargetRow(event.target);
         if (target) {
-            currRow = target;
-            removeDraggableRows();
-            addDraggableRow(target);
-            currRow.classList.add("is-dragging");
+            // find current active tab
+            let table = getCurrentTabDragTable();
 
+            if (!table) {
+                return;
+            }
+
+            table.currRow = target;
+            removeDraggableRows(table);
+            addDraggableRow(table, target);
+            table.currRow.classList.add("is-dragging");
 
             let coords = getMouseCoords(event);
             mouseDownX = coords.x;
@@ -385,46 +461,59 @@ function bindMouse() {
 
         mouseX = coords.x - mouseDownX;
         mouseY = coords.y - mouseDownY;  
+
+        let table = getCurrentTabDragTable();
+        if (!table) {
+            return;
+        }
         
-        moveRow(mouseX, mouseY);
+        moveRow(table, mouseX, mouseY);
     });
     
     document.addEventListener("mouseup", (event) => {
-        if (!mouseDrag) return;
-        
-        currRow.classList.remove("is-dragging");
-        removeDraggableRows();
-        
-        dragElem = null;
+        if (!mouseDrag) {
+            return;
+        }
+
+        let table = getCurrentTabDragTable();
+
+        if (table.currRow) {
+            table.currRow.classList.remove("is-dragging");
+        }
+        removeDraggableRows(table);
+        table.dragElem = null;
+
         mouseDrag = false;
     });    
 }
 
-function swapRow(row, index) {
-    let currIndex = Array.from(tbody.children).indexOf(currRow);
-    let row1 = currIndex > index ? currRow : row;
-    let row2 = currIndex > index ? row : currRow;
+function swapRow(table, row, index) {
+    let currIndex = Array.from(table.tbody.children).indexOf(table.currRow);
+    let row1 = currIndex > index ? table.currRow : row;
+    let row2 = currIndex > index ? row : table.currRow;
       
-    tbody.insertBefore(row1, row2);
+    table.tbody.insertBefore(row1, row2);
 
-    reIndexRows();
+    if (table == manualAddDragTable) {
+        reIndexRows(table);
+    }
 }
 
-function reIndexRows() {
-    let rows = tbody.querySelectorAll("tr:not(.draggable-table__drag)");
+function reIndexRows(table) {
+    let rows = table.tbody.querySelectorAll("tr:not(.draggable-table__drag)");
 
     for (let i = 0; i < rows.length; i++) {
         rows[i].children[1].innerText = i + 1;
     }
 }
   
-function moveRow(x, y) {
-    dragElem.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+function moveRow(table, x, y) {
+    table.dragElem.style.transform = `translate3d(${x}px, ${y}px, 0)`;
 
-    let	dPos = dragElem.getBoundingClientRect();
+    let	dPos = table.dragElem.getBoundingClientRect();
     let currStartY = dPos.y;
     let currEndY = currStartY + dPos.height;
-    let rows = getRows();
+    let rows = getRows(table);
 
     for (var i = 0; i < rows.length; i++) {
         let rowElem = rows[i];
@@ -432,35 +521,35 @@ function moveRow(x, y) {
         let rowStartY = rowSize.y;
         let rowEndY = rowStartY + rowSize.height;
 
-        if(currRow !== rowElem && isIntersecting(currStartY, currEndY, rowStartY, rowEndY)) {
+        if(table.currRow !== rowElem && isIntersecting(currStartY, currEndY, rowStartY, rowEndY)) {
         if(Math.abs(currStartY - rowStartY) < rowSize.height / 2)
-            swapRow(rowElem, i);
+            swapRow(table, rowElem, i);
         }
     }    
 }
 
-function addDraggableRow(target) {    
-    dragElem = target.cloneNode(true);
-    dragElem.classList.add("draggable-table__drag");
-    dragElem.style.height = getStyle(target, "height");
-    dragElem.style.background = getStyle(target, "backgroundColor");     
+function addDraggableRow(table, target) {    
+    table.dragElem = target.cloneNode(true);
+    table.dragElem.classList.add("draggable-table__drag");
+    table.dragElem.style.height = getStyle(target, "height");
+    table.dragElem.style.background = getStyle(target, "backgroundColor");     
 
     for (var i = 0; i < target.children.length; i++) {
         let oldTD = target.children[i];
-        let newTD = dragElem.children[i];
+        let newTD = table.dragElem.children[i];
 
         newTD.style.width = getStyle(oldTD, "width");
         newTD.style.height = getStyle(oldTD, "height");
         newTD.style.padding = getStyle(oldTD, "padding");
         newTD.style.margin = getStyle(oldTD, "margin");
-    }      
+    }
   
-    tbody.appendChild(dragElem);
+    table.tbody.appendChild(table.dragElem);
 
     let tPos = target.getBoundingClientRect();
-    let dPos = dragElem.getBoundingClientRect();
-    dragElem.style.bottom = ((dPos.y - tPos.y) - tPos.height) + "px";
-    dragElem.style.left = "-1px";
+    let dPos = table.dragElem.getBoundingClientRect();
+    table.dragElem.style.bottom = ((dPos.y - tPos.y) - tPos.height) + "px";
+    table.dragElem.style.left = "-1px";
 
     document.dispatchEvent(
         new MouseEvent("mousemove", { 
@@ -471,8 +560,8 @@ function addDraggableRow(target) {
     );
 }  
 
-function getRows() {
-    return table.querySelectorAll('tbody tr');
+function getRows(table) {
+    return table.tbody.querySelectorAll("tr");
 }    
 
 function getTargetRow(target) {
@@ -492,18 +581,18 @@ function getMouseCoords(event) {
         x: event.clientX,
         y: event.clientY
     };    
-}  
+}
 
 function getStyle(target, styleName) {
     let compStyle = getComputedStyle(target);
     let style = compStyle[styleName];
 
     return style ? style : null;
-}  
+}
 
 function isIntersecting(min0, max0, min1, max1) {
     return Math.max(min0, max0) >= Math.min(min1, max1) && Math.min(min0, max0) <= Math.max(min1, max1);
-}  
+}
 
 async function uploadManualAlbumCover(event) {
     const file = event.target.files[0];
@@ -518,17 +607,14 @@ async function uploadManualAlbumCover(event) {
     }
 }
 
-function addTrackInfoRow() {
-    let row = document.createElement("tr");
-    const albumArtist = $("ma-album-artist").value;
-
-    let cols = [
+function createTrackInfoCols() {
+    return [
         { // title
             "value": "",
             "placeholder": "Title"
         },
         { // artist
-            "value": albumArtist ? albumArtist : "",
+            "value": "",
             "placeholder": "Artist"
         },
         { // length
@@ -536,37 +622,18 @@ function addTrackInfoRow() {
             "placeholder": "mm:ss"
         },
     ];
+}
+
+function addTrackInfoRow() {
+    const albumArtist = $("ma-album-artist").value;
     
-    let rowDeleteButton = document.createElement("td");
-    let rowDeleteIcon = document.createElement("img");
-    rowDeleteIcon.classList.add("filter-white");
-    rowDeleteIcon.classList.add("track-info-x");
-    rowDeleteIcon.setAttribute("src", "../img/icons/x.svg");
-    rowDeleteIcon.addEventListener("click", (event) => {
-        document.querySelector("#ma-track-info-form tbody").removeChild(event.target.parentNode.parentNode);
-        reIndexRows();
-    });
-    rowDeleteButton.appendChild(rowDeleteIcon);
+    let cols = createTrackInfoCols();
+    cols[1].value = albumArtist ? albumArtist : "";
 
-    row.appendChild(rowDeleteButton); // row delete button
-    row.appendChild(document.createElement("td")); // track number
+    let newTrack = createManualAddTrack(cols);
+    manualAddDragTable.tbody.appendChild(newTrack);
 
-    cols.forEach(col => {
-        let newTD = document.createElement("td");
-
-        let inputField = document.createElement("input");
-        inputField.classList.add("entry-field");
-        inputField.setAttribute("type", "text");
-        inputField.setAttribute("value", col["value"]);
-        inputField.setAttribute("placeholder", col["placeholder"]);        
-
-        newTD.appendChild(inputField);
-        row.appendChild(newTD);
-    });
-
-    tbody.appendChild(row);
-
-    reIndexRows();
+    reIndexRows(manualAddDragTable);
 }
 
 async function saveManualAddAlbum() {
@@ -589,7 +656,7 @@ async function saveManualAddAlbum() {
     }
 
     await window.db.clearTracks(albumID);
-    let tracks = document.querySelectorAll("#ma-track-info-form tbody tr");
+    let tracks = manualAddDragTable.tbody.querySelectorAll("tr");
 
     let tracksInAlbum = [];
     tracks.forEach(track => {
@@ -620,18 +687,193 @@ function resetManualAddAlbum() {
     $("ma-album-cover").style.backgroundImage = "";
     $("ma-album-cover-input").value = ""; // ensures that resubmitting the same image again later counts as a 'change' event
 
-    document.querySelector("#ma-track-info-form tbody").innerHTML = `
-        <tr>
-            <td><img class="filter-white track-info-x" src="../img/icons/x.svg"></td>
-            <td>1</td>
-            <td><input class="entry-field" type="text" value="" placeholder="Title"></td>
-            <td><input class="entry-field" type="text" value="" placeholder="Artist"></td>
-            <td><input class="entry-field" type="text" value="3:00" placeholder="mm:ss"></td>
-        </tr>
-    `;
+    manualAddDragTable.tbody.innerHTML = ``;
+    manualAddDragTable.tbody.appendChild(createManualAddTrack(null));
+    reIndexRows(manualAddDragTable);
+}
 
-    document.querySelector("#ma-track-info-form .track-info-x").addEventListener("click", (event) => {
-        document.querySelector("#ma-track-info-form tbody").removeChild(event.target.parentNode.parentNode);
-        reIndexRows();
+// cols contains the values and placeholders for each item in a track
+// when null, defaults are applied
+function createManualAddTrack(cols) {
+    // default
+    if (!cols) {
+        cols = createTrackInfoCols();
+    }
+
+    let row = document.createElement("tr");
+    
+    let rowDeleteButton = document.createElement("td");
+    let rowDeleteIcon = document.createElement("img");
+    rowDeleteIcon.classList.add("filter-white");
+    rowDeleteIcon.classList.add("track-info-x");
+    rowDeleteIcon.setAttribute("src", "../img/icons/x.svg");
+    rowDeleteIcon.addEventListener("click", (event) => {
+        manualAddDragTable.tbody.removeChild(event.target.parentNode.parentNode);
+        reIndexRows(manualAddDragTable);
     });
+    rowDeleteButton.appendChild(rowDeleteIcon);
+
+    row.appendChild(rowDeleteButton); // row delete button
+    row.appendChild(document.createElement("td")); // track number
+
+    cols.forEach(col => {
+        let newTD = document.createElement("td");
+
+        let inputField = document.createElement("input");
+        inputField.classList.add("entry-field");
+        inputField.setAttribute("type", "text");
+        inputField.setAttribute("value", col["value"]);
+        inputField.setAttribute("placeholder", col["placeholder"]);
+
+        newTD.appendChild(inputField);
+        row.appendChild(newTD);
+    });
+
+    let lengthInput = row.children[4];
+    lengthInput.addEventListener("input", (event) => {
+        let inputField = event.target;
+        const isValid = isValidTime(inputField.value)
+        if (isValid) {
+            inputField.classList.remove("invalid");
+        } else {
+            inputField.classList.add("invalid")
+        }
+    });
+
+    return row;
+}
+
+function isValidTime(time) {
+    const regex = /^\d{1,2}:\d{2}$/;
+
+    if (!time) {
+        return true;
+    }
+
+    if (regex.test(time)) {
+        let timeTokens = time.split(":");
+        if (timeTokens[1] >= 60) { // more than 59 seconds, ex 4:71 is invalid
+            return false;
+        } else {
+            return true;
+        }
+    } else { // incorrect format
+        return false;
+    }
+}
+
+function minutesToSeconds(time) {
+    if (!isValidTime(time)) {
+        return null;
+    }
+
+    let timeTokens = time.split(":");
+    return (parseInt(timeTokens[1]) + 60 * parseInt(timeTokens[0]));
+}
+
+function createQueueTrack(queueItem) {
+    let row = document.createElement("tr");
+
+    let rowDeleteButton = document.createElement("td");
+    let rowDeleteIcon = document.createElement("img");
+    rowDeleteIcon.classList.add("filter-white");
+    rowDeleteIcon.classList.add("track-info-x");
+    rowDeleteIcon.setAttribute("src", "../img/icons/x.svg");
+    rowDeleteIcon.addEventListener("click", (event) => {
+        queueDragTable.tbody.removeChild(event.target.parentNode.parentNode);
+
+        let index = queueContents.indexOf(queueItem);
+        if (index !== -1) {
+            queueContents.splice(index, 1);
+        }
+    });
+    rowDeleteButton.appendChild(rowDeleteIcon);
+
+    row.appendChild(rowDeleteButton); // row delete button
+
+    let albumCoverTD = document.createElement("td");
+    let albumCover = document.createElement("div");
+    albumCover.style.backgroundImage = queueItem.coverURL;
+    albumCover.classList.add("cover-preview");
+    albumCoverTD.appendChild(albumCover);
+    row.appendChild(albumCoverTD);
+
+    let cols = queueItem.getColFormat();
+
+    for (let i = 1; i < cols.length; i++) {
+        let col = cols[i];
+
+        let newTD = document.createElement("td");
+
+        let textField = document.createElement("span");
+        textField.innerText = col;
+
+        newTD.appendChild(textField);
+        row.appendChild(newTD);
+    };
+
+    return row;
+}
+
+async function addQueueTrack(queueTrack) {
+    if (!queueTrack.coverURL) {
+        let defaultCover = await window.db.coverFromImage("img/default-cover.png");
+        let base64 = uInt8ArrayToBase64(defaultCover);
+        queueTrack.coverURL = `url("data:image/jpg;base64,${base64}")`;
+    }
+
+    queueContents.push(queueTrack);
+    refreshQueueRows();
+}
+
+function refreshQueueRows() {
+    queueDragTable.tbody.innerHTML = "";
+
+    queueContents.forEach(qt => {
+        queueDragTable.tbody.appendChild(createQueueTrack(qt))
+    });
+}
+
+async function scrobbleQueue() {
+    let nextScrobbleTime = Date.now() / 1000;
+
+    while (queueContents.length > 0) {
+        let trackTitles = [];
+        let trackArtists = [];
+        let albumTitles = [];
+        let albumArtists = [];
+        let timestamps = [];
+        
+        // one call to the track.scrobble endpoint can handle 50 tracks, maximum
+        let i = 0;
+        // prepare scrobble data
+        for (i = 0; i < 50; i++) {
+            let index = queueContents.length - (i + 1); // index of track to be prepared for scrobbling
+            if (index < 0) {
+                break;
+            }
+            
+            let queueItem = queueContents[index];
+
+            trackTitles.push(queueItem.title);
+            trackArtists.push(queueItem.artist);
+            albumTitles.push(queueItem.album);
+            albumArtists.push(queueItem.albumArtist);
+            timestamps.push(nextScrobbleTime);
+
+            nextScrobbleTime -= minutesToSeconds(queueItem.trackLength)
+        }
+
+        // send scrobbles
+        let success = await window.lastfm.sendScrobbles(trackTitles, trackArtists, albumTitles, albumArtists, timestamps);
+
+        if (success) {
+            queueContents = queueContents.slice(0, -i);
+        } else {
+            refreshQueueRows();
+            break;
+        }
+
+        refreshQueueRows();
+    }
 }

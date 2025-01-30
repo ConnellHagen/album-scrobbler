@@ -49,6 +49,10 @@
     outline: none;
 }
 
+    .entry-field.invalid {
+        background-color: var(--bs-danger);
+    }
+
 #ma-album-info {
     display: flex;
     flex-direction: row;

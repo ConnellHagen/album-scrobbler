@@ -93,7 +93,19 @@ svg {
         }
 
         .form-btn.primary-btn:active {
-            background-color: #0a58ca;
+            background-color: #0748ba;
+        }
+
+    .form-btn.secondary-btn {
+        background-color: var(--bs-secondary);
+    }
+
+        .form-btn.secondary-btn:hover {
+            background-color: #5d646b;
+        }
+
+        .form-btn.secondary-btn:active {
+            background-color: #4f565b;
         }
 
     .form-btn.danger-btn {
@@ -105,7 +117,7 @@ svg {
         }        
         
         .form-btn.danger-btn:active {
-            background-color: #b02a37;
+            background-color: #a01a27;
         }
 
 .button-row {

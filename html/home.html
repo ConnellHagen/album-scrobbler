@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' https: data:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; img-src 'self' https: data:;">
 
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <link rel="stylesheet" href="../css/homepage.css">
@@ -38,14 +39,17 @@
                 <a id="credentials-popup-x" href="#"><img src="../img/icons/x.svg" class="filter-white"></a>
             </div>
             <div id="credentials-popup-content" class="popup-content">
-                <p>Enter your API key and Shared Secret. Instructions on how to obtain these are on the <a href="#">GitHub</a>.</p>
+                <p>Enter your API key and Shared Secret. Instructions on how to obtain these are on the <a
+                        href="#">GitHub</a>.</p>
                 <div class="mb-3">
                     <label for="credentials-apikey-input" class="form-label">API Key:</label>
-                    <input type="text" id="credentials-apikey-input" class="form-control" maxlength="32" aria-describedby="API Key Input">
+                    <input type="text" id="credentials-apikey-input" class="form-control" maxlength="32"
+                        aria-describedby="API Key Input">
                 </div>
                 <div class="mb-4">
                     <label for="credentials-apisecret-input" class="form-label">Shared Secret:</label>
-                    <input type="text" id="credentials-apisecret-input" class="form-control" maxlength="32" aria-describedby="Shared Secret Input">
+                    <input type="text" id="credentials-apisecret-input" class="form-control" maxlength="32"
+                        aria-describedby="Shared Secret Input">
                 </div>
                 <a id="credentials-popup-save-btn">Save</a>
             </div>
@@ -116,21 +120,25 @@
             </ul>
         </div>
     </div>
+
     <div class="content-display">
+
         <div id="collection-tab" class="tab-content active">
             <div id="album-grid" class="album-grid">
             </div>
         </div>
+
         <div id="search-tab" class="tab-content">
             <div>
                 <h1>Search with Discogs</h1>
                 <h2>Coming Soon!</h2>
             </div>
         </div>
+
         <div id="manual-add-tab" class="tab-content">
             <div id="ma-album-info" class="manual-add-section">
                 <div id="ma-album-select">
-                    <div id="ma-album-cover" ></div>
+                    <div id="ma-album-cover"></div>
                     <div id="ma-album-camera-icon">
                         <img class="filter-white" src="../img/icons/camera-fill.svg">
                     </div>
@@ -171,12 +179,44 @@
                 </div>
             </div>
         </div>
+
         <div id="queue-tab" class="tab-content">
+            <!-- heading -->
             <div>
-                <h1>Scrobble Queue</h1>
-                <h2>Coming Soon!</h2>
+                <h1 id="queue-heading">Queue</h1>
+            </div>
+
+            <!-- queue grid -->
+            <div id="queue-track-list" class="manual-add-section">
+                <table id="queue-track-info" class="draggable-table">
+                    <colgroup>
+                        <col span="1">
+                        <col span="1">
+                        <col span="1">
+                        <col span="1">
+                        <col span="1">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                            <th>Length</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- buttons -->
+            <div id="queue-buttons" class="button-row">
+                <a id="queue-clear-btn" class="form-btn danger-btn">Clear</a>
+                <a id="queue-scrobble-btn" class="form-btn primary-btn">Send Scrobbles</a>
             </div>
         </div>
+
     </div>
 
     <!--Inputs-->

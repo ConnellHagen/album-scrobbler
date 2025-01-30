@@ -8,6 +8,7 @@ const lastfm = new LastFM();
 contextBridge.exposeInMainWorld("db", {
     getAlbum: (artist, title) => db.selectAlbum(artist, title),
     getAlbumByID: (albumID) => db.selectAlbumByID(albumID),
+    deleteAlbumByID: (albumID) => db.deleteAlbumByID(albumID),
     getAllAlbums: () => db.selectAllAlbums(),
     addAlbum: (artist, title, cover) => db.insertAlbum(artist, title, cover),
     coverFromImage: (path) => Database.coverFromImage(path),
@@ -15,6 +16,7 @@ contextBridge.exposeInMainWorld("db", {
     setUser: (name, pfp) => db.setUser(name, pfp),
     removeUser: () => db.removeUser(),
     clearTracks: (albumID) => db.removeTracks(albumID),
+    getTracks: (albumID) => db.getTracks(albumID),
     addAlbumTracks: (albumID, tracks) => db.addTracks(albumID, tracks)
     // , test: () => db.test()
 });
@@ -28,7 +30,9 @@ contextBridge.exposeInMainWorld("lastfm", {
     setAPISecret: (secret) => lastfm.setAPISecret(secret),
     getSessionKey: () => lastfm.getSessionKey(),
     isSession: () => lastfm.isSession(),
-    endSession: () => lastfm.endSession()
+    endSession: () => lastfm.endSession(),
+    sendScrobbles: (tracks, artists, albums, albumArtists, timestamps) => lastfm.sendScrobbles(tracks, artists, albums, albumArtists, timestamps),
+    testSessionKeyValid: () => lastfm.testSessionKeyValid()
 });
 
 ipcRenderer.on("close-db", async () => {

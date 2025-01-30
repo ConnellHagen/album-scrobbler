@@ -32,10 +32,15 @@ class Database {
             FROM Albums
             WHERE Artist = ? AND Title = ? 
         `);
-        this.selectAlbumFromIDStmt = this.db.prepare(`
+        this.selectAlbumByIDStmt = this.db.prepare(`
             SELECT *
             FROM Albums
             WHERE ID = ?
+        `);
+        this.deleteAlbumByIDStmt = this.db.prepare(`
+            DELETE
+            FROM Albums
+            WHERE AlbumID = ?
         `);
         this.selectAllAlbumsStmt = this.db.prepare(`
             SELECT *
@@ -49,6 +54,11 @@ class Database {
         this.addTracksStmt = this.db.prepare(`
             INSERT INTO Tracks(AlbumID, TrackNum, Artist, Title, Length)
             VALUES (?, ?, ?, ?, ?)
+        `);
+        this.getTracksStmt = this.db.prepare(`
+            SELECT Artist, Title, Length
+            FROM Tracks
+            WHERE AlbumID = ?
         `);
         this.setUserStmt = this.db.prepare(`
             INSERT INTO User(Username, ProfilePicture)
@@ -123,10 +133,10 @@ class Database {
     async selectAlbumByID(albumID) {
         await this.initPromise;
 
-        this.selectAlbumFromIDStmt.bind([albumID]);
-        this.selectAlbumFromIDStmt.step();
-        let row = this.selectAlbumFromIDStmt.getAsObject();
-        this.selectAlbumFromIDStmt.reset();
+        this.selectAlbumByIDStmt.bind([albumID]);
+        this.selectAlbumByIDStmt.step();
+        let row = this.selectAlbumByIDStmt.getAsObject();
+        this.selectAlbumByIDStmt.reset();
 
         // if there are no rows returned, row.Artist is falsey
         if (!row.Artist) {
@@ -134,6 +144,12 @@ class Database {
         } else {
             return row;
         }
+    }
+
+    async deleteAlbumByID(albumID) {
+        await this.initPromise;
+
+        this.deleteAlbumByIDStmt.run([albumID]);
     }
 
     async selectAllAlbums() {
@@ -170,6 +186,21 @@ class Database {
 
             this.addTracksStmt.run(params);
         });
+    }
+
+    async getTracks(albumID) {
+        await this.initPromise;
+
+        this.getTracksStmt.bind([albumID]);
+
+        let rows = [];
+        while (this.getTracksStmt.step()) {
+            rows.push(this.getTracksStmt.get());
+        }
+
+        this.selectAllAlbumsStmt.reset();
+
+        return rows;
     }
 
     async getUser() {

@@ -62,11 +62,28 @@ if (!singleInstanceLock) {
             app.quit();
     });
     
-    ipcMain.handle("fetch", async (event, url, _method = "GET", _headers = {Accept: "application/json"}) => {
+    ipcMain.handle("fetchGET", async (event, url, _headers = {Accept: "application/json"}) => {
         const response = await fetch(url, {
-            method: _method,
+            method: "GET",
             headers: _headers
         });
+
+        const data = await response.json();
+        
+        return JSON.stringify(data);
+    });
+
+    ipcMain.handle("fetchPOST", async (event, url, params = "", _headers = {Accept: "application/json"}) => {
+        const formBody = new URLSearchParams(params).toString();
+
+        console.log(formBody);
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: _headers,
+            body: formBody
+        });
+
         const data = await response.json();
         
         return JSON.stringify(data);
