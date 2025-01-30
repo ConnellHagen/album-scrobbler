@@ -237,11 +237,11 @@ async function fillCollectionGrid() {
                 addQueueTrack(queueTrack);
             });
         });
-        overlayDeleteButton.addEventListener("click", async () => {
-            window.db.deleteAlbumByID(albumID);
-            // also remove album from the gui.
-            adjustCollectionGridSize();
-        });
+        // overlayDeleteButton.addEventListener("click", async () => {
+        //     window.db.deleteAlbumByID(albumID);
+        //     // also remove album from the gui.
+        //     adjustCollectionGridSize();
+        // });
         let plusIcon = document.createElement("img");
         plusIcon.src = "../img/icons/plus.svg";
         plusIcon.classList.add("filter-white");

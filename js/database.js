@@ -40,7 +40,7 @@ class Database {
         this.deleteAlbumByIDStmt = this.db.prepare(`
             DELETE
             FROM Albums
-            WHERE AlbumID = ?
+            WHERE ID = ?
         `);
         this.selectAllAlbumsStmt = this.db.prepare(`
             SELECT *
