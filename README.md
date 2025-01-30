@@ -19,15 +19,17 @@ and can be done [here](https://www.last.fm/api/account/create). All
 you need to fill out on this form is an email, and the name of the
 application (probably "Album Scrobbler" for simplicity).
 
-(screenshot of registration)
+![image](https://github.com/user-attachments/assets/74be4962-2071-4df3-bf4b-a7ab29e2a353)
 
 Now, this should bring you to a page that looks like the following
 screenshot. You can copy your API Key and Secret from here, and
 paste them into the boxes within the application.
 
-(screenshot of api key)
+![image](https://github.com/user-attachments/assets/06851787-552f-414c-87a1-c34471525fbd)
 
-(screenshot of form in app)
+![image](https://github.com/user-attachments/assets/f8e59e25-9576-4502-8e6d-07523e896bde)
+
+![image](https://github.com/user-attachments/assets/32395ede-ed11-4dd7-b5b9-2bd5de995f8b)
 
 Once you have saved your keys, you may proceed to login with last.fm
 in the application and scrobble away!
