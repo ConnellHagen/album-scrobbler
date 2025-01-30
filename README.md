@@ -42,9 +42,8 @@ paste them into the boxes within the application.
 
 ![image](https://github.com/user-attachments/assets/06851787-552f-414c-87a1-c34471525fbd)
 
-![image](https://github.com/user-attachments/assets/f8e59e25-9576-4502-8e6d-07523e896bde)
-
-![image](https://github.com/user-attachments/assets/32395ede-ed11-4dd7-b5b9-2bd5de995f8b)
+<img src="https://github.com/user-attachments/assets/f8e59e25-9576-4502-8e6d-07523e896bde" style="width: 56%;">
+<img src="https://github.com/user-attachments/assets/32395ede-ed11-4dd7-b5b9-2bd5de995f8b" style="width: 43%;">
 
 Once you have saved your keys, you may proceed to login with last.fm
 in the application and scrobble away!
