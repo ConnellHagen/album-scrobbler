@@ -208,86 +208,61 @@ async function fillCollectionGrid() {
     let allAlbums = await window.db.getAllAlbums();
 
     for (let i = 0; i < allAlbums.length; i++) {
-        let album = allAlbums[i];
-        let albumID = album[0];
-        let artist = album[1];
-        let title = album[2];
-        let coverBlob = album[3];
-
-        let base64Image;
-        if (coverBlob) {
-            base64Image = uInt8ArrayToBase64(coverBlob);
-        } else {
-            let defaultCover = await window.db.coverFromImage("img/default-cover.png");
-            base64Image = uInt8ArrayToBase64(defaultCover);
-        }
-        let url = `url("data:image/jpg;base64,${base64Image}")`;
-
-        let albumImage = document.createElement("div");
-        albumImage.classList.add("album-image");
-        albumImage.style.backgroundImage = url;
-
-        let albumOverlay = document.createElement("div");
-        albumOverlay.classList.add("album-overlay");
-        let overlayAddButton = document.createElement("a");
-        overlayAddButton.addEventListener("click", async () => {
-            let albumTracks = await window.db.getTracks(albumID);
-            albumTracks.forEach(track => {
-                let queueTrack = new QueueItem(url, track[1], track[0], title, artist, track[2]);
-                addQueueTrack(queueTrack);
-            });
-        });
-        // overlayDeleteButton.addEventListener("click", async () => {
-        //     window.db.deleteAlbumByID(albumID);
-        //     // also remove album from the gui.
-        //     adjustCollectionGridSize();
-        // });
-        let plusIcon = document.createElement("img");
-        plusIcon.src = "../img/icons/plus.svg";
-        plusIcon.classList.add("filter-white");
-        overlayAddButton.appendChild(plusIcon);
-        albumOverlay.appendChild(overlayAddButton);
-
-        let albumCard = document.createElement("div");
-        albumCard.classList.add("album");
-        albumCard.appendChild(albumImage);
-        albumCard.appendChild(albumOverlay);
-
-        grid.appendChild(albumCard);
+        // console.log("adding");
+        console.log(allAlbums[i])
+        addAlbumToCollectionGrid(allAlbums[i]);
     }
-
-    adjustCollectionGridSize();
 }
 
-async function addAlbumToCollectionGrid(albumID) {
+async function addAlbumToCollectionGrid(album) {
     let grid = $("album-grid");
 
-    let album = await window.db.getAlbumByID(albumID);
-    let artist = album["Artist"];
-    let title = album["Title"];
-    let coverBlob = album["Cover"];
-
     let base64Image;
-    if (coverBlob) {
-        base64Image = uInt8ArrayToBase64(coverBlob);
+    if (album.Cover) {
+        base64Image = uInt8ArrayToBase64(album.Cover);
     } else {
         let defaultCover = await window.db.coverFromImage("img/default-cover.png");
         base64Image = uInt8ArrayToBase64(defaultCover);
     }
     let url = `url("data:image/jpg;base64,${base64Image}")`;
 
+    let albumImage = document.createElement("div");
+    albumImage.classList.add("album-image");
+    albumImage.style.backgroundImage = url;
+
+    let albumOverlay = document.createElement("div");
+    albumOverlay.classList.add("album-overlay");
+    let overlayAddButton = document.createElement("a");
+    overlayAddButton.addEventListener("click", async () => {
+        let albumTracks = await window.db.getTracks(album.ID);
+        albumTracks.forEach(track => {
+            let queueTrack = new QueueItem(url, track[1], track[0], album.Title, album.Artist, track[2]);
+            addQueueTrack(queueTrack);
+        });
+    });
+    // overlayDeleteButton.addEventListener("click", async () => {
+    //     window.db.deleteAlbumByID(albumID);
+    //     // also remove album from the gui.
+    //     adjustCollectionGridSize();
+    // });
+    let plusIcon = document.createElement("img");
+    plusIcon.src = "../img/icons/plus.svg";
+    plusIcon.classList.add("filter-white");
+    overlayAddButton.appendChild(plusIcon);
+    albumOverlay.appendChild(overlayAddButton);
+
     let albumCard = document.createElement("div");
     albumCard.classList.add("album");
-    albumCard.style.backgroundImage = url;
+    albumCard.appendChild(albumImage);
+    albumCard.appendChild(albumOverlay);
 
+    grid.appendChild(albumCard);
 
     let dummyAlbums = document.querySelectorAll(".album.dummy");
     dummyAlbums.forEach(dummy => {
         grid.removeChild(dummy);
     });
-    grid.appendChild(albumCard);
 
-    // to adjust the number of dummy albums
     adjustCollectionGridSize();
 }           
 
@@ -678,7 +653,9 @@ async function saveManualAddAlbum() {
 
     resetManualAddAlbum();
 
-    addAlbumToCollectionGrid(albumID);
+    let album = await window.db.getAlbumByID(albumID);
+    console.log(album)
+    addAlbumToCollectionGrid(album);
 }
 
 function resetManualAddAlbum() {

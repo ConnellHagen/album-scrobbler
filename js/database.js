@@ -157,7 +157,7 @@ class Database {
 
         let rows = [];
         while (this.selectAllAlbumsStmt.step()) {
-            rows.push(this.selectAllAlbumsStmt.get());
+            rows.push(this.selectAllAlbumsStmt.getAsObject());
         }
 
         this.selectAllAlbumsStmt.reset();

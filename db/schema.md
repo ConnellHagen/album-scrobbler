@@ -11,7 +11,7 @@ CREATE TABLE Tracks (
     Title       TEXT,
     Length      INTEGER,
     AlbumID     INTEGER,
-    FOREIGN KEY(AlbumID)
+    FOREIGN KEY(AlbumID) ON DELETE CASCADE // try this
     REFERENCES Albums(ID)
 );
 CREATE TABLE User (
