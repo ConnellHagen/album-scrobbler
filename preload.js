@@ -1,9 +1,11 @@
 const { contextBridge, ipcRenderer } = require("electron");
 const Database = require("./js/database.js");
 const LastFM = require("./js/lastfm.js");
+const Discogs = require("./js/discogs.js");
 
 const db = new Database();
 const lastfm = new LastFM();
+const discogs = new Discogs();
 
 contextBridge.exposeInMainWorld("db", {
     getAlbum: (artist, title) => db.selectAlbum(artist, title),
@@ -18,7 +20,6 @@ contextBridge.exposeInMainWorld("db", {
     clearTracks: (albumID) => db.removeTracks(albumID),
     getTracks: (albumID) => db.getTracks(albumID),
     addAlbumTracks: (albumID, tracks) => db.addTracks(albumID, tracks)
-    // , test: () => db.test()
 });
 
 contextBridge.exposeInMainWorld("lastfm", {
@@ -33,6 +34,12 @@ contextBridge.exposeInMainWorld("lastfm", {
     endSession: () => lastfm.endSession(),
     sendScrobbles: (tracks, artists, albums, albumArtists, timestamps) => lastfm.sendScrobbles(tracks, artists, albums, albumArtists, timestamps),
     testSessionKeyValid: () => lastfm.testSessionKeyValid()
+});
+
+contextBridge.exposeInMainWorld("discogs", {
+    getPersonalAccessToken: () => discogs.getPersonalAccessToken(),
+    setPersonalAccessToken: (token) => discogs.setPersonalAccessToken(token),
+    search: (query) => discogs.searchByQuery(query)
 });
 
 ipcRenderer.on("close-db", async () => {

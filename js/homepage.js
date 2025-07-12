@@ -30,6 +30,7 @@ let scrollPositions = {
     "collection-tab": 0,
     "search-tab": 0,
     "manual-add-tab": 0,
+    "keys-tab": 0,
     "queue-tab": 0
 };
 
@@ -71,7 +72,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     manualAddDragTable.tbody = $("ma-track-info").querySelector('tbody');
     queueDragTable.tbody = $("queue-track-info").querySelector('tbody');
 
-    let tabs = ["search", "manual-add", "queue"];
+    let tabs = ["search", "manual-add", "keys", "queue"];
     for (let i = 0; i < tabs.length; i++) {
         $(`${tabs[i]}-tab-btn`).addEventListener("click", (event) => {
             switchToTab(`${tabs[i]}-tab`);
@@ -93,10 +94,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         await window.lastfm.requestAuth();
     });
 
-    $("ae-api-info-btn").addEventListener("click", async (event) => {
-        loadCredentials();
-    });
-    
     $("signin-popup-x").addEventListener("click", (event) => {
         $("signin-popup").classList.remove("shown");
     });
@@ -105,16 +102,19 @@ window.addEventListener("DOMContentLoaded", async () => {
         signIn();
     });
 
-    $("credentials-popup-x").addEventListener("click", (event) => {
-        $("credentials-popup").classList.remove("shown");
-    });
-
-    $("credentials-popup-save-btn").addEventListener("click", async (event) => {
-        saveCredentials();
-    });
-
     $("sign-out-btn").addEventListener("click", (event) => {
         signOut();
+    });
+
+    $("search-bar-input").addEventListener("keyup", (event) => {
+        if (event.key === "Enter") {
+            document.activeElement.blur();
+            searchDiscogs();
+        }
+    });
+
+    $("search-btn").addEventListener("click", (event) => {
+        searchDiscogs();
     });
 
     $("ma-album-select").addEventListener("click", (event) => {
@@ -137,6 +137,27 @@ window.addEventListener("DOMContentLoaded", async () => {
         resetManualAddAlbum();
     });
 
+    $("lastfm-key-reset-btn").addEventListener("click", async (event) => {
+        $("lastfm-key-input").value = "";
+        $("lastfm-secret-input").value = "";
+    });
+
+    $("lastfm-key-save-btn").addEventListener("click", async (event) => {
+        const apiKey = $("lastfm-key-input").value;
+        const apiSecret = $("lastfm-secret-input").value;
+        window.lastfm.setAPIKey(apiKey);
+        window.lastfm.setAPISecret(apiSecret);
+    });
+
+    $("discogs-key-reset-btn").addEventListener("click", async (event) => {
+        $("discogs-token-input").value = "";
+    });
+
+    $("discogs-key-save-btn").addEventListener("click", async (event) => {
+        const token = $("discogs-token-input").value;
+        window.discogs.setPersonalAccessToken(token);
+    });
+
     $("queue-clear-btn").addEventListener("click", (event) => {
         queueDragTable.tbody.innerHTML = "";
 
@@ -156,6 +177,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     startSession();
     fillCollectionGrid();
     resetManualAddAlbum();
+    fillAPIKeys();
 
     // await window.db.test();
 });
@@ -208,8 +230,6 @@ async function fillCollectionGrid() {
     let allAlbums = await window.db.getAllAlbums();
 
     for (let i = 0; i < allAlbums.length; i++) {
-        // console.log("adding");
-        console.log(allAlbums[i])
         addAlbumToCollectionGrid(allAlbums[i]);
     }
 }
@@ -309,27 +329,6 @@ function adjustCollectionGridSize() {
     });
 }
 
-async function loadCredentials() {
-    $("credentials-apikey-input").value = await window.lastfm.getAPIKey();
-    $("credentials-apisecret-input").value = await window.lastfm.getAPISecret();
-    $("credentials-popup").classList.add("shown");
-}
-
-async function saveCredentials() {
-    let apiKey = $("credentials-apikey-input").value;
-    let apiSecret = $("credentials-apisecret-input").value;
-
-    if (!(apiKey.length === 32 && apiSecret.length === 32)) {
-        $("credentials-popup").classList.remove("shown");
-        return;
-    }      
-
-    window.lastfm.setAPIKey(apiKey);
-    window.lastfm.setAPISecret(apiSecret);
-
-    $("credentials-popup").classList.remove("shown");
-}
-
 async function startSession() {
     let isSession = await window.lastfm.isSession();
 
@@ -382,6 +381,20 @@ async function signOut() {
 
     $("account-sign-in-menu").classList.add("shown");
     $("account-sign-out-menu").classList.remove("shown");
+}
+
+async function searchDiscogs() {
+    let searchText = $("search-bar-input").value;
+    const regex = /^[ \w!@#$%^&*(),\./;:-]+$/;
+
+    if (!regex.test(searchText)) {
+        console.log("Error: invalid query");
+        return;
+    }
+
+    let data = await window.discogs.search(searchText);
+
+    console.log(data);
 }
 
 function getCurrentTabDragTable() {
@@ -654,7 +667,6 @@ async function saveManualAddAlbum() {
     resetManualAddAlbum();
 
     let album = await window.db.getAlbumByID(albumID);
-    console.log(album)
     addAlbumToCollectionGrid(album);
 }
 
@@ -718,6 +730,12 @@ function createManualAddTrack(cols) {
     });
 
     return row;
+}
+
+async function fillAPIKeys() {
+    $("lastfm-key-input").value = await window.lastfm.getAPIKey();
+    $("lastfm-secret-input").value = await window.lastfm.getAPISecret();
+    $("discogs-token-input").value = await window.discogs.getPersonalAccessToken();
 }
 
 function isValidTime(time) {

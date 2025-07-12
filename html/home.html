@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../css/collection.css">
     <link rel="stylesheet" href="../css/search.css">
     <link rel="stylesheet" href="../css/manual-add.css">
+    <link rel="stylesheet" href="../css/keys.css">
     <link rel="stylesheet" href="../css/queue.css">
 
     <title>Album Scrobbler</title>
@@ -29,29 +30,6 @@
                 <p>Authorize Album Scrobbler by signing in with your<br>last.fm account in the browser window.</p>
                 <p>Click the button below when you are done:</p>
                 <a id="signin-popup-done-btn">Done</a>
-            </div>
-        </div>
-    </div>
-
-    <div id="credentials-popup" class="popup">
-        <div id="credentials-popup-card" class="popup-card bg-body">
-            <div class="topbar">
-                <a id="credentials-popup-x" href="#"><img src="../img/icons/x.svg" class="filter-white"></a>
-            </div>
-            <div id="credentials-popup-content" class="popup-content">
-                <p>Enter your API key and Shared Secret. Instructions on how to obtain these are on the <a
-                        href="#">GitHub</a>.</p>
-                <div class="mb-3">
-                    <label for="credentials-apikey-input" class="form-label">API Key:</label>
-                    <input type="text" id="credentials-apikey-input" class="form-control" maxlength="32"
-                        aria-describedby="API Key Input">
-                </div>
-                <div class="mb-4">
-                    <label for="credentials-apisecret-input" class="form-label">Shared Secret:</label>
-                    <input type="text" id="credentials-apisecret-input" class="form-control" maxlength="32"
-                        aria-describedby="Shared Secret Input">
-                </div>
-                <a id="credentials-popup-save-btn">Save</a>
             </div>
         </div>
     </div>
@@ -84,6 +62,15 @@
             <ul class="nav nav-pills nav-flush flex-column flex-grow-0 mb-auto text-center">
                 <li>
                     <div class="border-top">
+                        <a href="#" id="keys-tab-btn" class="tab-btn nav-link py-3 border-bottom rounded-0"
+                            data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Keys"
+                            data-bs-original-title="Keys">
+                            <img src="../img/icons/key.svg" class="filter-white" />
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="border-top">
                         <a href="#" id="queue-tab-btn" class="tab-btn nav-link py-3 border-bottom rounded-0"
                             data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Queue"
                             data-bs-original-title="Queue">
@@ -98,11 +85,8 @@
                         </a>
                         <div id="account-dropmenu" class="dropmenu bg-light-subtle">
                             <div id="account-sign-in-menu" class="dropmenu-card shown">
-                                <div class="dropmenu-option top">
+                                <div class="dropmenu-option top bottom">
                                     <a id="account-signin-btn">Sign&nbsp;in</a>
-                                </div>
-                                <div class="dropmenu-option bottom">
-                                    <a id="ae-api-info-btn">Add/Edit&nbsp;API&nbsp;Info</a>
                                 </div>
                             </div>
                             <div id="account-sign-out-menu" class="dropmenu-card">
@@ -129,10 +113,24 @@
         </div>
 
         <div id="search-tab" class="tab-content">
+            <!-- heading -->
             <div>
-                <h1>Search with Discogs</h1>
-                <h2>Coming Soon!</h2>
+                <h1 id="search-heading">Search</h1>
             </div>
+
+            <!-- search bar -->
+            <div id="search-bar">
+                <input id="search-bar-input" type="text" placeholder="Search">
+                <a id="search-btn">
+                    <img class="filter-white" src="../img/icons/search.svg">
+                </a>
+            </div>
+
+            <!-- results grid -->
+            <div>
+
+            </div>
+
         </div>
 
         <div id="manual-add-tab" class="tab-content">
@@ -176,6 +174,39 @@
                 <div class="button-row">
                     <a id="ma-reset-btn" class="form-btn danger-btn">Reset</a>
                     <a id="ma-save-btn" class="form-btn primary-btn">Save</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="keys-tab" class="tab-content">
+            <div>
+                <h1 id="keys-heading">API Keys</h1>
+            </div>
+
+            <div id="keys-entry">
+                <div class="key-entry-section">
+                    <div class="key-entry-inputs">
+                        <h2>Last.fm&nbsp;(Required)</h2>
+                        <label for="lastfm-key-input">API Key</label>
+                        <input id="lastfm-key-input" type="text" maxlength="32">
+                        <label for="lastfm-secret-input">API Secret</label>
+                        <input id="lastfm-secret-input" type="password" maxlength="32">
+                    </div>
+                    <div class="key-entry-buttons">
+                        <a id="lastfm-key-reset-btn" class="form-btn danger-btn">Reset</a>
+                        <a id="lastfm-key-save-btn" class="form-btn primary-btn">Save</a>
+                    </div>
+                </div>
+                <div class="key-entry-section">
+                    <div class="key-entry-inputs">
+                        <h2>Discogs&nbsp;(Recommended)</h2>
+                        <label for="discogs-token-input">Personal Access Token</label>
+                        <input id="discogs-token-input" type="password" maxlength="40">
+                    </div>
+                    <div class="key-entry-buttons">
+                        <a id="discogs-key-reset-btn" class="form-btn danger-btn">Reset</a>
+                        <a id="discogs-key-save-btn" class="form-btn primary-btn">Save</a>
+                    </div>
                 </div>
             </div>
         </div>

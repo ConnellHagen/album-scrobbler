@@ -256,10 +256,6 @@ class Database {
             );
         `);
     }
-        
-    async test() {
-        await this.initPromise;
-    }
 }
 
 module.exports = Database;

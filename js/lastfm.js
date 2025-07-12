@@ -15,7 +15,7 @@ class LastFM {
     async setAPIKey(key) {
         await keytar.setPassword("AlbumScrobbler", "APIKey", key);
     }
-    
+
     async getAPISecret() {
         return await keytar.getPassword("AlbumScrobbler", "APISecret");
     }
@@ -32,8 +32,7 @@ class LastFM {
         await keytar.setPassword("AlbumScrobbler", "SessionKey", key);
     }
 
-    /* for testing purposes only
-       */
+    /* for testing purposes only */
     async testSessionKeyValid() {
         const API_KEY = await this.getAPIKey();
         const SESSION_KEY = await this.getSessionKey();
@@ -51,17 +50,14 @@ class LastFM {
         params["format"] = "json";
 
         let response = await ipcRenderer.invoke("fetchPOST", API_ROOT, params);
-        // console.log(response);
         let data = JSON.parse(response);
-        // console.log("DATA:")
-        // console.log(data)
-
+        console.log(data);
     }
-    
+
     async getRequestToken() {
         const API_KEY = await this.getAPIKey();
         const endpoint = `${API_ROOT}?method=auth.gettoken&api_key=${API_KEY}&format=json`;
-        
+
         const response = await ipcRenderer.invoke("fetchGET", endpoint);
         let obj = JSON.parse(response);
         this.token = obj["token"];
@@ -104,7 +100,7 @@ class LastFM {
         await this.setSessionKey(key);
         return [username, pfp]
     }
-    
+
     async isSession() {
         const sessionKey = await this.getSessionKey();
         return sessionKey != null;
@@ -114,7 +110,7 @@ class LastFM {
         await keytar.deletePassword("AlbumScrobbler", "SessionKey")
     }
 
-    // procondition: all 4 parameter arrays must be the same length
+    // pre-condition: all 4 parameter arrays must be the same length
     async sendScrobbles(tracks, artists, albums, albumArtists, timestamps) {
         let API_KEY = await this.getAPIKey();
         let SESSION_KEY = await this.getSessionKey();
@@ -155,8 +151,6 @@ class LastFM {
         let response = await ipcRenderer.invoke("fetchPOST", API_ROOT, params);
         let data = JSON.parse(response);
 
-        console.log(data["scrobbles"]["@attr"].ignored);
-
         return true; // success
     }
 
@@ -168,7 +162,7 @@ class LastFM {
         let signature = "";
         Object.keys(params)
             .sort()
-            .forEach((v, i) => {                
+            .forEach((v, i) => {
                 signature += v;
                 signature += params[v];
             });

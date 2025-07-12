@@ -11,7 +11,6 @@ process.chdir(__dirname);
 if (!singleInstanceLock) {
     app.quit();
 } else {
-
     const createWindow = () => {
         mainWindow = new BrowserWindow({
             width: 1280,
@@ -21,6 +20,7 @@ if (!singleInstanceLock) {
                 contextIsolation: true,
                 enableRemoteModule: false,
                 sandbox: false,
+                devTools: false,
                 preload: path.join(__dirname, "preload.js")
             }
         });
@@ -76,8 +76,6 @@ if (!singleInstanceLock) {
     ipcMain.handle("fetchPOST", async (event, url, params = "", _headers = {Accept: "application/json"}) => {
         const formBody = new URLSearchParams(params).toString();
 
-        console.log(formBody);
-
         const response = await fetch(url, {
             method: "POST",
             headers: _headers,
@@ -92,5 +90,4 @@ if (!singleInstanceLock) {
     ipcMain.handle("md5", (event, content) => {
         return hash("md5", content, "hex");
     });
-
 }
