@@ -11,10 +11,10 @@ class Discogs {
         if (token) {
             this.discogs = new Disconnect({
                 userToken: token,
-                userAgent: "AlbumScrobbler/0.2.0"
+                userAgent: "AlbumScrobbler/0.2.1"
             });
         } else {
-            this.discogs = new Disconnect("AlbumScrobbler/0.2.0");
+            this.discogs = new Disconnect("AlbumScrobbler/0.2.1");
         }
         this.db = this.discogs.database();
     }
@@ -37,21 +37,35 @@ class Discogs {
         await this.initPromise;
 
         let params = {
-            type: "release",
+            type: "master",
             format: "album",
             per_page: 20,
             pages: 1
         };
 
-        let result = await this.db.search(query, params, (err, data) => {
-            if (err) {
-                console.log(`err`, err);
-            }
-            console.log(`data`, data);
-            return data;
+        return new Promise((resolve, reject) => {
+            this.db.search(query, params, (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(data);
+                }
+            });
         });
+    }
 
-        return result;
+    async getMaster(masterId) {
+        await this.initPromise;
+
+        return new Promise((resolve, reject) => {
+            this.db.getMaster(masterId, (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(data);
+                }
+            });
+        });
     }
 }
 

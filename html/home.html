@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self'; img-src 'self' https: data:;">
+        content="default-src 'self'; script-src 'self'; img-src 'self' https: data:; connect-src 'self' https:;">
 
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <link rel="stylesheet" href="../css/homepage.css">
@@ -108,7 +108,7 @@
     <div class="content-display">
 
         <div id="collection-tab" class="tab-content active">
-            <div id="album-grid" class="album-grid">
+            <div id="collection-album-grid" class="album-grid">
             </div>
         </div>
 
@@ -127,7 +127,7 @@
             </div>
 
             <!-- results grid -->
-            <div>
+            <div id="search-results-grid" class="album-grid">
 
             </div>
 
@@ -142,8 +142,8 @@
                     </div>
                 </div>
                 <div id="ma-album-fields">
-                    <input id="ma-album-title" class="entry-field" type="text" value="" placeholder="Album Title">
-                    <input id="ma-album-artist" class="entry-field" type="text" value="" placeholder="Album Artist">
+                    <input id="ma-album-title" class="entry-field" type="text" value="" placeholder="Album Title" spellcheck="false">
+                    <input id="ma-album-artist" class="entry-field" type="text" value="" placeholder="Album Artist" spellcheck="false">
                 </div>
             </div>
             <div id="ma-track-info" class="manual-add-section">

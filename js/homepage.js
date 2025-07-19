@@ -48,6 +48,17 @@ class DragTable {
     }
 }
 
+class DiscogsDisplayedAlbum {
+    constructor(cover, masterId) {
+        this.cover = cover;
+        this.masterId = masterId;
+    }
+
+    async getMaster() {
+        return await window.discogs.getMaster(this.masterId);
+    }
+}
+
 let manualAddDragTable = new DragTable();
 let queueDragTable = new DragTable();
 
@@ -72,7 +83,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     manualAddDragTable.tbody = $("ma-track-info").querySelector('tbody');
     queueDragTable.tbody = $("queue-track-info").querySelector('tbody');
 
-    let tabs = ["search", "manual-add", "keys", "queue"];
+    let tabs = ["manual-add", "keys", "queue"];
     for (let i = 0; i < tabs.length; i++) {
         $(`${tabs[i]}-tab-btn`).addEventListener("click", (event) => {
             switchToTab(`${tabs[i]}-tab`);
@@ -81,8 +92,14 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     $("collection-tab-btn").addEventListener("click", (event) => {
         switchToTab(`collection-tab`);
-        adjustCollectionGridSize();
+        adjustGridSize("collection-album-grid");
         $("collection-tab").scrollTop = scrollPositions["collection-tab"];
+    });
+
+    $("search-tab-btn").addEventListener("click", (event) => {
+        switchToTab(`search-tab`);
+        adjustGridSize("search-results-grid");
+        $("search-tab").scrollTop = scrollPositions["search-tab"];
     });
 
     $("account-dropdown").addEventListener("click", (event) => {
@@ -160,6 +177,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     $("queue-clear-btn").addEventListener("click", (event) => {
         queueDragTable.tbody.innerHTML = "";
+        queueContents = [];
 
         window.lastfm.testSessionKeyValid();
     });
@@ -183,7 +201,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 window.addEventListener("resize", async () => {
-    adjustCollectionGridSize();
+    adjustGridSize("collection-album-grid");
+    adjustGridSize("search-results-grid");
+});
+
+window.addEventListener("beforeunload", async () => {
+    await window.db.write();
 });
 
 window.onclick = (event) => {
@@ -224,7 +247,7 @@ function switchToTab(tabname) {
 }
 
 async function fillCollectionGrid() {
-    let grid = $("album-grid");
+    let grid = $("collection-album-grid");
     grid.innerHTML = "";
 
     let allAlbums = await window.db.getAllAlbums();
@@ -235,13 +258,13 @@ async function fillCollectionGrid() {
 }
 
 async function addAlbumToCollectionGrid(album) {
-    let grid = $("album-grid");
+    let grid = $("collection-album-grid");
 
     let base64Image;
     if (album.Cover) {
         base64Image = uInt8ArrayToBase64(album.Cover);
     } else {
-        let defaultCover = await window.db.coverFromImage("img/default-cover.png");
+        let defaultCover = await window.db.coverFromImagePath("img/default-cover.png");
         base64Image = uInt8ArrayToBase64(defaultCover);
     }
     let url = `url("data:image/jpg;base64,${base64Image}")`;
@@ -278,26 +301,25 @@ async function addAlbumToCollectionGrid(album) {
 
     grid.appendChild(albumCard);
 
-    let dummyAlbums = document.querySelectorAll(".album.dummy");
+    let dummyAlbums = document.querySelectorAll("#collection-album-grid .album.dummy");
     dummyAlbums.forEach(dummy => {
         grid.removeChild(dummy);
     });
 
-    adjustCollectionGridSize();
+    adjustGridSize("collection-album-grid");
 }           
 
 // modifies the height of the albums in the grid and
 // adds invisible dummy albums to the end to stop albums
 // from stretching into rectangles at the end of the grid
-function adjustCollectionGridSize() {
-    let grid = $("album-grid");
+function adjustGridSize(gridId) {
+    let grid = $(gridId);
     let gridWidth = grid.offsetWidth;
     let numPerRow = Math.floor((gridWidth - 20) / 220);
 
-    let albums = document.querySelectorAll(".album:not(.dummy)");
-    let dummyAlbums = document.querySelectorAll(".album.dummy");
+    let albums = document.querySelectorAll(`#${gridId} .album:not(.dummy)`);
+    let dummyAlbums = document.querySelectorAll(`#${gridId} .album.dummy`);
 
-    // add dummy albums to the end so that flex-grow doesn't cause last row to be shaped weird
     let newTotalDummyAlbums = (numPerRow - (albums.length % numPerRow)) % numPerRow;
     let dummyAlbumsToAdd = newTotalDummyAlbums - dummyAlbums.length;
 
@@ -315,8 +337,6 @@ function adjustCollectionGridSize() {
             grid.removeChild(grid.lastElementChild);
         }
     }
-
-    albums = grid.querySelectorAll(".album:not(.dummy)");
 
     if (albums.length === 0) {
         return;
@@ -394,7 +414,8 @@ async function searchDiscogs() {
 
     let data = await window.discogs.search(searchText);
 
-    console.log(data);
+    clearSearchGrid();
+    addAlbumsToSearchGrid(data.results);
 }
 
 function getCurrentTabDragTable() {
@@ -586,7 +607,7 @@ async function uploadManualAlbumCover(event) {
     const file = event.target.files[0];
 
     if (file) {
-        let blob = await window.db.coverFromImage(file.path);
+        let blob = await window.db.coverFromImagePath(file.path);
         const base64Image = uInt8ArrayToBase64(blob);
         let url = `url("data:image/jpeg;base64,${base64Image}")`
         $("ma-album-cover").style.backgroundImage = url;
@@ -668,6 +689,8 @@ async function saveManualAddAlbum() {
 
     let album = await window.db.getAlbumByID(albumID);
     addAlbumToCollectionGrid(album);
+
+    await window.db.write();
 }
 
 function resetManualAddAlbum() {
@@ -731,6 +754,126 @@ function createManualAddTrack(cols) {
 
     return row;
 }
+
+function cleanDiscogsArtistName(artistName) {
+    // remove the trailing "(1)" or "(2)" etc. from artist names
+    return artistName.replace(/\s*\(\d+\)$/, "").trim();
+}
+
+function compressArtistList(artists) {
+    if (artists.length === 1) {
+        return cleanDiscogsArtistName(artists[0].name);
+    }
+
+    let artist = "";
+    for (let i = 0; i < artists.length; i++) {
+        if (i === artists.length - 1) {
+            artist += " & ";
+        } else if (i !== 0) {
+            artist += ", ";
+        }
+        artist += cleanDiscogsArtistName(artists[i].name);
+    }
+    return artist;
+}
+
+async function saveDiscogsAlbum(masterId) {
+    let master = await window.discogs.getMaster(masterId);
+
+    const albumTitle = master.title;
+    const artist = compressArtistList(master.artists);
+
+    let coverURL = master.images.find(image => {
+        return image.type === "primary";
+    });
+    if (!coverURL && master.images.length > 0) {
+        coverURL = master.images[0]; // if no primary image, use the first image
+    }
+
+    let coverUint8Array = null;
+    if (coverURL) {
+        coverUint8Array = await window.db.coverFromImageURL(coverURL.resource_url);
+    } else {
+        coverUint8Array = await window.db.coverFromImagePath("img/default-cover.png");
+    }
+
+    let albumID = await window.db.addAlbumWithDiscogsID(artist, albumTitle, coverUint8Array, masterId);
+    if (!albumID) {
+        console.log("Error: could not add album to database");
+        return;
+    }
+
+    let tracksInAlbum = [];
+    master.tracklist.forEach(track => {
+        const number = track.position;
+        const trackTitle = track.title;
+        const length = track.duration ? track.duration : "3:00";
+        const featureArtists = track.extraartists?.filter(a => a.role.includes("Featuring"));
+
+        const featureString = featureArtists ? compressArtistList(featureArtists) : "";
+
+        let title = featureString ? `${trackTitle} (feat. ${featureString})` : trackTitle;
+
+        tracksInAlbum.push({
+            num: number,
+            artist: artist,
+            title: title,
+            length: length,
+            album: albumID
+        });
+    });
+
+    await window.db.addAlbumTracks(albumID, tracksInAlbum);
+
+    let album = await window.db.getAlbumByID(albumID);
+    addAlbumToCollectionGrid(album);
+
+    await window.db.write();
+}
+
+async function clearSearchGrid() {
+    let searchGrid = $("search-results-grid");
+    searchGrid.innerHTML = "";
+}
+
+async function addAlbumsToSearchGrid(discogsAlbums) {
+    let grid = $("search-results-grid");
+
+    discogsAlbums.forEach(discogsAlbum => {
+        let albumImage = document.createElement("div");
+        albumImage.classList.add("album-image");
+        albumImage.style.backgroundImage = `url(${discogsAlbum.cover_image})`;
+
+        let albumOverlay = document.createElement("div");
+        albumOverlay.classList.add("album-overlay");
+        let overlayAddButton = document.createElement("a");
+        overlayAddButton.addEventListener("click", async () => {
+            const masterId = discogsAlbum.master_id;
+            saveDiscogsAlbum(masterId);
+        });
+
+        let plusIcon = document.createElement("img");
+        plusIcon.src = "../img/icons/plus.svg";
+        plusIcon.classList.add("filter-white");
+        overlayAddButton.appendChild(plusIcon);
+        albumOverlay.appendChild(overlayAddButton);
+
+        let albumCard = document.createElement("div");
+        albumCard.classList.add("album");
+        albumCard.appendChild(albumImage);
+        albumCard.appendChild(albumOverlay);
+
+        grid.appendChild(albumCard);
+    });
+
+    let dummyAlbums = document.querySelectorAll("#search-results-grid .album.dummy");
+    dummyAlbums.forEach(dummy => {
+        grid.removeChild(dummy);
+    });
+
+    adjustGridSize("search-results-grid");
+}
+
 
 async function fillAPIKeys() {
     $("lastfm-key-input").value = await window.lastfm.getAPIKey();
@@ -812,7 +955,7 @@ function createQueueTrack(queueItem) {
 
 async function addQueueTrack(queueTrack) {
     if (!queueTrack.coverURL) {
-        let defaultCover = await window.db.coverFromImage("img/default-cover.png");
+        let defaultCover = await window.db.coverFromImagePath("img/default-cover.png");
         let base64 = uInt8ArrayToBase64(defaultCover);
         queueTrack.coverURL = `url("data:image/jpg;base64,${base64}")`;
     }
