@@ -8,12 +8,15 @@ const lastfm = new LastFM();
 const discogs = new Discogs();
 
 contextBridge.exposeInMainWorld("db", {
+    write: () => db.write(),
     getAlbum: (artist, title) => db.selectAlbum(artist, title),
     getAlbumByID: (albumID) => db.selectAlbumByID(albumID),
     deleteAlbumByID: (albumID) => db.deleteAlbumByID(albumID),
     getAllAlbums: () => db.selectAllAlbums(),
     addAlbum: (artist, title, cover) => db.insertAlbum(artist, title, cover),
-    coverFromImage: (path) => Database.coverFromImage(path),
+    addAlbumWithDiscogsID: (artist, title, cover, discogsID) => db.insertAlbumWithDiscogsID(artist, title, cover, discogsID),
+    coverFromImagePath: (path) => Database.coverFromImagePath(path),
+    coverFromImageURL: (url) => Database.coverFromImageURL(url),
     getUser: () => db.getUser(),
     setUser: (name, pfp) => db.setUser(name, pfp),
     removeUser: () => db.removeUser(),
@@ -39,7 +42,8 @@ contextBridge.exposeInMainWorld("lastfm", {
 contextBridge.exposeInMainWorld("discogs", {
     getPersonalAccessToken: () => discogs.getPersonalAccessToken(),
     setPersonalAccessToken: (token) => discogs.setPersonalAccessToken(token),
-    search: (query) => discogs.searchByQuery(query)
+    search: (query) => discogs.searchByQuery(query),
+    getMaster: (masterId) => discogs.getMaster(masterId)
 });
 
 ipcRenderer.on("close-db", async () => {

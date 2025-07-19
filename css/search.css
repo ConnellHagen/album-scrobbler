@@ -53,3 +53,8 @@
         margin: 0;
         padding: 0;
     }
+
+#search-results-grid {
+    margin: -10px;
+    margin-top: 0;
+}
