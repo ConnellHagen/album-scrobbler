@@ -362,6 +362,10 @@ async function restoreSession() {
 
     let username = userinfo.values[0][0];
     let pfp = userinfo.values[0][1];
+
+    if (!username || !pfp) {
+        signOut();
+    }
     
     $("pfp-preview").src = pfp;
     $("user-info-pfp").src = pfp;

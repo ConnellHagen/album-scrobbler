@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("node:path");
 const { hash } = require("node:crypto");
+const migrateDatabase = require('./js/migrate');
 
 let mainWindow;
 
@@ -8,9 +9,7 @@ const singleInstanceLock = app.requestSingleInstanceLock();
 
 process.chdir(__dirname);
 
-if (!singleInstanceLock) {
-    app.quit();
-} else {
+let startApplication = () => {
     const createWindow = () => {
         mainWindow = new BrowserWindow({
             width: 1280,
@@ -90,4 +89,13 @@ if (!singleInstanceLock) {
     ipcMain.handle("md5", (event, content) => {
         return hash("md5", content, "hex");
     });
+}
+
+if (!singleInstanceLock) {
+    app.quit();
+} else {
+    (async () => {
+        await migrateDatabase();
+        startApplication();
+    })();
 }

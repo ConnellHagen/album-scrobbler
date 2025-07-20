@@ -11,10 +11,10 @@ class Discogs {
         if (token) {
             this.discogs = new Disconnect({
                 userToken: token,
-                userAgent: "AlbumScrobbler/0.2.1"
+                userAgent: "AlbumScrobbler/0.2.2"
             });
         } else {
-            this.discogs = new Disconnect("AlbumScrobbler/0.2.1");
+            this.discogs = new Disconnect("AlbumScrobbler/0.2.2");
         }
         this.db = this.discogs.database();
     }
