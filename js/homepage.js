@@ -275,24 +275,25 @@ async function addAlbumToCollectionGrid(album) {
 
     let albumOverlay = document.createElement("div");
     albumOverlay.classList.add("album-overlay");
+
     let overlayAddButton = document.createElement("a");
-    overlayAddButton.addEventListener("click", async () => {
-        let albumTracks = await window.db.getTracks(album.ID);
-        albumTracks.forEach(track => {
-            let queueTrack = new QueueItem(url, track[1], track[0], album.Title, album.Artist, track[2]);
-            addQueueTrack(queueTrack);
-        });
-    });
-    // overlayDeleteButton.addEventListener("click", async () => {
-    //     window.db.deleteAlbumByID(albumID);
-    //     // also remove album from the gui.
-    //     adjustCollectionGridSize();
-    // });
-    let plusIcon = document.createElement("img");
-    plusIcon.src = "../img/icons/plus.svg";
-    plusIcon.classList.add("filter-white");
-    overlayAddButton.appendChild(plusIcon);
+    overlayAddButton.classList.add("album-overlay-add-btn");
+
+    let overlayDeleteButton = document.createElement("a");
+    overlayDeleteButton.classList.add("album-overlay-delete-btn");
+
+    let createPlusIcon = () => {
+        let plusIcon = document.createElement("img");
+        plusIcon.src = "../img/icons/plus.svg";
+        plusIcon.classList.add("filter-white", "plus-icon");
+        return plusIcon;
+    }
+
+    overlayAddButton.appendChild(createPlusIcon());
+    overlayDeleteButton.appendChild(createPlusIcon());
+
     albumOverlay.appendChild(overlayAddButton);
+    albumOverlay.appendChild(overlayDeleteButton);
 
     let albumCard = document.createElement("div");
     albumCard.classList.add("album");
@@ -301,13 +302,26 @@ async function addAlbumToCollectionGrid(album) {
 
     grid.appendChild(albumCard);
 
+    overlayAddButton.addEventListener("click", async () => {
+        let albumTracks = await window.db.getTracks(album.ID);
+        albumTracks.forEach(track => {
+            let queueTrack = new QueueItem(url, track[1], track[0], album.Title, album.Artist, track[2]);
+            addQueueTrack(queueTrack);
+        });
+    });
+    overlayDeleteButton.addEventListener("click", async () => {
+        window.db.deleteAlbumByID(album.ID);
+        albumCard.remove();
+        adjustGridSize("collection-album-grid");
+    });
+
     let dummyAlbums = document.querySelectorAll("#collection-album-grid .album.dummy");
     dummyAlbums.forEach(dummy => {
         grid.removeChild(dummy);
     });
 
     adjustGridSize("collection-album-grid");
-}           
+}
 
 // modifies the height of the albums in the grid and
 // adds invisible dummy albums to the end to stop albums
@@ -328,7 +342,7 @@ function adjustGridSize(gridId) {
             let dummyAlbum = document.createElement("div");
             dummyAlbum.classList.add("album");
             dummyAlbum.classList.add("dummy");
-    
+
             grid.appendChild(dummyAlbum);
         }
     } else if (dummyAlbumsToAdd < 0) {
@@ -390,7 +404,7 @@ async function signIn() {
         $("pfp-preview").src = pfp;
         $("user-info-pfp").src = pfp;
         $("user-info-name").innerText = username;
-    
+
         $("account-sign-in-menu").classList.remove("shown");
         $("account-sign-out-menu").classList.add("shown");
     });
@@ -444,7 +458,7 @@ function bindMouse() {
         if (event.button != 0) {
             return true;
         }
-        
+
         let target = getTargetRow(event.target);
         if (target) {
             // find current active tab
@@ -462,14 +476,14 @@ function bindMouse() {
             let coords = getMouseCoords(event);
             mouseDownX = coords.x;
             mouseDownY = coords.y;
-            
-            mouseDrag = true;   
+
+            mouseDrag = true;
         }
     });
-    
+
     document.addEventListener("mousemove", (event) => {
         if (!mouseDrag) return;
-        
+
         let coords = getMouseCoords(event);
 
         mouseX = coords.x - mouseDownX;
@@ -479,10 +493,10 @@ function bindMouse() {
         if (!table) {
             return;
         }
-        
+
         moveRow(table, mouseX, mouseY);
     });
-    
+
     document.addEventListener("mouseup", (event) => {
         if (!mouseDrag) {
             return;
@@ -497,14 +511,14 @@ function bindMouse() {
         table.dragElem = null;
 
         mouseDrag = false;
-    });    
+    });
 }
 
 function swapRow(table, row, index) {
     let currIndex = Array.from(table.tbody.children).indexOf(table.currRow);
     let row1 = currIndex > index ? table.currRow : row;
     let row2 = currIndex > index ? row : table.currRow;
-      
+
     table.tbody.insertBefore(row1, row2);
 
     if (table == manualAddDragTable) {
@@ -519,7 +533,7 @@ function reIndexRows(table) {
         rows[i].children[1].innerText = i + 1;
     }
 }
-  
+
 function moveRow(table, x, y) {
     table.dragElem.style.transform = `translate3d(${x}px, ${y}px, 0)`;
 
@@ -538,7 +552,7 @@ function moveRow(table, x, y) {
         if(Math.abs(currStartY - rowStartY) < rowSize.height / 2)
             swapRow(table, rowElem, i);
         }
-    }    
+    }
 }
 
 function addDraggableRow(table, target) {    
@@ -851,6 +865,7 @@ async function addAlbumsToSearchGrid(discogsAlbums) {
         let albumOverlay = document.createElement("div");
         albumOverlay.classList.add("album-overlay");
         let overlayAddButton = document.createElement("a");
+        overlayAddButton.classList.add("album-overlay-add-btn");
         overlayAddButton.addEventListener("click", async () => {
             const masterId = discogsAlbum.master_id;
             saveDiscogsAlbum(masterId);

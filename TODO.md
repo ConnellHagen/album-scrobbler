@@ -3,8 +3,8 @@
 
 ### Ungrouped Features:
 - [x] Discogs add to library
-- [ ] Proper SQL database setup with scripts
-- [ ] Delete albums from collection grid
+- [x] Proper SQL database setup with scripts
+- [x] Delete albums from collection grid
 - [ ] Edit albums in collection grid
 - [ ] Release-ready README
 - [ ] Setup executable/installer/updater
