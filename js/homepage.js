@@ -1,3 +1,11 @@
+const COLLECTION_TAB = "collection-tab";
+const SEARCH_TAB = "search-tab";
+const MANUAL_ADD_TAB = "manual-add-tab";
+const KEYS_TAB = "keys-tab";
+const QUEUE_TAB = "queue-tab";
+const COLLECTION_ALBUM_GRID = "collection-album-grid";
+const SEARCH_RESULTS_GRID = "search-results-grid";
+
 let $ = (id) => document.getElementById(id);
 
 let uInt8ArrayToBase64 = (uint8) => {
@@ -27,11 +35,11 @@ let base64ToUint8Array = (base64) => {
 }
 
 let scrollPositions = {
-    "collection-tab": 0,
-    "search-tab": 0,
-    "manual-add-tab": 0,
-    "keys-tab": 0,
-    "queue-tab": 0
+    COLLECTION_TAB: 0,
+    SEARCH_TAB: 0,
+    MANUAL_ADD_TAB: 0,
+    KEYS_TAB: 0,
+    QUEUE_TAB: 0
 };
 
 let mouseDownX = 0;
@@ -79,6 +87,9 @@ class QueueItem {
 
 let queueContents = []
 
+let manualEditAlbumID = null; // null when not in edit mode
+let manualEditAlbumCoverNode = null;
+
 window.addEventListener("DOMContentLoaded", async () => {
     manualAddDragTable.tbody = $("ma-track-info").querySelector('tbody');
     queueDragTable.tbody = $("queue-track-info").querySelector('tbody');
@@ -92,14 +103,14 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     $("collection-tab-btn").addEventListener("click", (event) => {
         switchToTab(`collection-tab`);
-        adjustGridSize("collection-album-grid");
-        $("collection-tab").scrollTop = scrollPositions["collection-tab"];
+        adjustGridSize(COLLECTION_ALBUM_GRID);
+        $(COLLECTION_TAB).scrollTop = scrollPositions[COLLECTION_TAB];
     });
 
     $("search-tab-btn").addEventListener("click", (event) => {
         switchToTab(`search-tab`);
-        adjustGridSize("search-results-grid");
-        $("search-tab").scrollTop = scrollPositions["search-tab"];
+        adjustGridSize(SEARCH_RESULTS_GRID);
+        $(SEARCH_TAB).scrollTop = scrollPositions[SEARCH_TAB];
     });
 
     $("account-dropdown").addEventListener("click", (event) => {
@@ -201,8 +212,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 window.addEventListener("resize", async () => {
-    adjustGridSize("collection-album-grid");
-    adjustGridSize("search-results-grid");
+    adjustGridSize(COLLECTION_ALBUM_GRID);
+    adjustGridSize(SEARCH_RESULTS_GRID);
 });
 
 window.addEventListener("beforeunload", async () => {
@@ -247,7 +258,7 @@ function switchToTab(tabname) {
 }
 
 async function fillCollectionGrid() {
-    let grid = $("collection-album-grid");
+    let grid = $(COLLECTION_ALBUM_GRID);
     grid.innerHTML = "";
 
     let allAlbums = await window.db.getAllAlbums();
@@ -258,7 +269,7 @@ async function fillCollectionGrid() {
 }
 
 async function addAlbumToCollectionGrid(album) {
-    let grid = $("collection-album-grid");
+    let grid = $(COLLECTION_ALBUM_GRID);
 
     let base64Image;
     if (album.Cover) {
@@ -279,6 +290,9 @@ async function addAlbumToCollectionGrid(album) {
     let overlayAddButton = document.createElement("a");
     overlayAddButton.classList.add("album-overlay-add-btn");
 
+    let overlayEditButton = document.createElement("a");
+    overlayEditButton.classList.add("album-overlay-edit-btn");
+
     let overlayDeleteButton = document.createElement("a");
     overlayDeleteButton.classList.add("album-overlay-delete-btn");
 
@@ -288,12 +302,20 @@ async function addAlbumToCollectionGrid(album) {
         plusIcon.classList.add("filter-white", "plus-icon");
         return plusIcon;
     }
+    let createPencilIcon = () => {
+        let pencilIcon = document.createElement("img");
+        pencilIcon.src = "../img/icons/pencil.svg";
+        pencilIcon.classList.add("filter-white", "pencil-icon");
+        return pencilIcon;
+    }
 
     overlayAddButton.appendChild(createPlusIcon());
     overlayDeleteButton.appendChild(createPlusIcon());
+    overlayEditButton.appendChild(createPencilIcon());
 
     albumOverlay.appendChild(overlayAddButton);
     albumOverlay.appendChild(overlayDeleteButton);
+    albumOverlay.appendChild(overlayEditButton);
 
     let albumCard = document.createElement("div");
     albumCard.classList.add("album");
@@ -312,15 +334,19 @@ async function addAlbumToCollectionGrid(album) {
     overlayDeleteButton.addEventListener("click", async () => {
         window.db.deleteAlbumByID(album.ID);
         albumCard.remove();
-        adjustGridSize("collection-album-grid");
+        adjustGridSize(COLLECTION_ALBUM_GRID);
+    });
+    overlayEditButton.addEventListener("click", async () => {
+        manualEditAlbum(album.ID);
+        manualEditAlbumCoverNode = overlayEditButton.parentElement.parentElement.children[0];
     });
 
-    let dummyAlbums = document.querySelectorAll("#collection-album-grid .album.dummy");
+    let dummyAlbums = document.querySelectorAll(`#${COLLECTION_ALBUM_GRID} .album.dummy`);
     dummyAlbums.forEach(dummy => {
         grid.removeChild(dummy);
     });
 
-    adjustGridSize("collection-album-grid");
+    adjustGridSize(COLLECTION_ALBUM_GRID);
 }
 
 // modifies the height of the albums in the grid and
@@ -437,9 +463,9 @@ async function searchDiscogs() {
 }
 
 function getCurrentTabDragTable() {
-    if ($("queue-tab").classList.contains("active")) {
+    if ($(QUEUE_TAB).classList.contains("active")) {
         return queueDragTable;
-    } else if ($("manual-add-tab").classList.contains("active")) {
+    } else if ($(MANUAL_ADD_TAB).classList.contains("active")) {
         return manualAddDragTable;
     }
 
@@ -677,9 +703,14 @@ async function saveManualAddAlbum() {
         albumCover = null;
     }
 
-    let albumID = await window.db.addAlbum(albumArtist, albumTitle, albumCover);
-    if (!albumID) {
-        return;
+    let albumID = manualEditAlbumID;
+    if (albumID) { // update existing
+        await window.db.updateAlbum(albumID, albumArtist, albumTitle, albumCover);
+    } else { // add new
+        let albumID = await window.db.addAlbum(albumArtist, albumTitle, albumCover);
+        if (!albumID) {
+            return;
+        }
     }
 
     await window.db.clearTracks(albumID);
@@ -701,14 +732,52 @@ async function saveManualAddAlbum() {
         });
     });
 
+    await window.db.clearTracks(albumID);
     await window.db.addAlbumTracks(albumID, tracksInAlbum);
 
+    if (manualEditAlbumID)  {
+        manualEditAlbumCoverNode.style.backgroundImage =  $("ma-album-cover").style.backgroundImage;;
+    } else {
+        let album = await window.db.getAlbumByID(albumID);
+        addAlbumToCollectionGrid(album);
+    }
+    
+    resetManualAddAlbum();
+    await window.db.write();
+}
+
+async function manualEditAlbum(albumID) {
     resetManualAddAlbum();
 
-    let album = await window.db.getAlbumByID(albumID);
-    addAlbumToCollectionGrid(album);
+    manualEditAlbumID = albumID;
+    const album = await window.db.getAlbumByID(albumID);
+    const tracks = await window.db.getTracks(albumID);
+    console.log(tracks);
 
-    await window.db.write();
+    $("ma-album-title").value = album.Title;
+    $("ma-album-artist").value = album.Artist;
+    if (album.Cover) {
+        const base64Image = uInt8ArrayToBase64(album.Cover);
+        $("ma-album-cover").style.backgroundImage = `url("data:image/jpg;base64,${base64Image}")`;
+    }
+
+    manualAddDragTable.tbody.innerHTML = ``;
+    tracks.forEach(track => {
+        const artist = track[0];
+        const title = track[1];
+        const length = track[2];
+
+        let cols = createTrackInfoCols();
+        cols[0].value = title ? title : "";
+        cols[1].value = artist ? artist : "";
+        cols[2].value = length ? length : "3:00";
+
+        let newTrack = createManualAddTrack(cols);
+        manualAddDragTable.tbody.appendChild(newTrack);
+    });
+        
+    reIndexRows(manualAddDragTable);
+    switchToTab(`manual-add-tab`);
 }
 
 function resetManualAddAlbum() {
@@ -717,6 +786,7 @@ function resetManualAddAlbum() {
     $("ma-album-cover").style.backgroundImage = "";
     $("ma-album-cover-input").value = ""; // ensures that resubmitting the same image again later counts as a 'change' event
 
+    manualEditAlbumID = null;
     manualAddDragTable.tbody.innerHTML = ``;
     manualAddDragTable.tbody.appendChild(createManualAddTrack(null));
     reIndexRows(manualAddDragTable);
@@ -841,6 +911,7 @@ async function saveDiscogsAlbum(masterId) {
         });
     });
 
+    await window.db.clearTracks(albumID);
     await window.db.addAlbumTracks(albumID, tracksInAlbum);
 
     let album = await window.db.getAlbumByID(albumID);
@@ -850,12 +921,12 @@ async function saveDiscogsAlbum(masterId) {
 }
 
 async function clearSearchGrid() {
-    let searchGrid = $("search-results-grid");
+    let searchGrid = $(SEARCH_RESULTS_GRID);
     searchGrid.innerHTML = "";
 }
 
 async function addAlbumsToSearchGrid(discogsAlbums) {
-    let grid = $("search-results-grid");
+    let grid = $(SEARCH_RESULTS_GRID);
 
     discogsAlbums.forEach(discogsAlbum => {
         let albumImage = document.createElement("div");
@@ -885,12 +956,12 @@ async function addAlbumsToSearchGrid(discogsAlbums) {
         grid.appendChild(albumCard);
     });
 
-    let dummyAlbums = document.querySelectorAll("#search-results-grid .album.dummy");
+    let dummyAlbums = document.querySelectorAll(`#${SEARCH_RESULTS_GRID} .album.dummy`);
     dummyAlbums.forEach(dummy => {
         grid.removeChild(dummy);
     });
 
-    adjustGridSize("search-results-grid");
+    adjustGridSize(SEARCH_RESULTS_GRID);
 }
 
 

@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("db", {
     getAllAlbums: () => db.selectAllAlbums(),
     addAlbum: (artist, title, cover) => db.insertAlbum(artist, title, cover),
     addAlbumWithDiscogsID: (artist, title, cover, discogsID) => db.insertAlbumWithDiscogsID(artist, title, cover, discogsID),
+    updateAlbum: (albumID, artist, title, cover) => db.updateAlbum(albumID, artist, title, cover),
     coverFromImagePath: (path) => Database.coverFromImagePath(path),
     coverFromImageURL: (url) => Database.coverFromImageURL(url),
     getUser: () => db.getUser(),

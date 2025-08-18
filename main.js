@@ -19,7 +19,7 @@ let startApplication = () => {
                 contextIsolation: true,
                 enableRemoteModule: false,
                 sandbox: false,
-                devTools: false,
+                // devTools: false,
                 preload: path.join(__dirname, "preload.js")
             }
         });

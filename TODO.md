@@ -5,7 +5,7 @@
 - [x] Discogs add to library
 - [x] Proper SQL database setup with scripts
 - [x] Delete albums from collection grid
-- [ ] Edit albums in collection grid
+- [x] Edit albums in collection grid
 - [ ] Release-ready README
 - [ ] Setup executable/installer/updater
 
