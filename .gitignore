@@ -132,3 +132,4 @@ dist
 # test
 img/test
 db/albums-backup.sqlite
+db/albums.sqlite

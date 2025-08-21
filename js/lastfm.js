@@ -66,8 +66,9 @@ class LastFM {
     async requestAuth() {
         await this.getRequestToken();
 
-        if (this.token === undefined || this.token == "")
-            throw "Token Missing"
+        if (this.token === undefined || this.token == "") {
+            throw new Error("Missing Last.fm Credentials. Please sign in and/or add API Keys.");
+        }
 
         const API_KEY = await this.getAPIKey();
 
@@ -114,6 +115,13 @@ class LastFM {
     async sendScrobbles(tracks, artists, albums, albumArtists, timestamps) {
         let API_KEY = await this.getAPIKey();
         let SESSION_KEY = await this.getSessionKey();
+
+        if (!SESSION_KEY) {
+            throw new Error("Missing Last.fm Credentials. Please sign in with Last.fm.");
+        }
+        else if (!API_KEY) {
+            throw new Error("Missing Last.fm Credentials. Please add API Keys.");
+        }
 
         let arrayLength = artists.length;
 

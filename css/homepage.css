@@ -125,3 +125,26 @@ svg {
     display: flex;
     gap: 10px;
 }
+
+#toast-container {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    pointer-events: none;
+    margin: 10px;
+    top: 0;
+    left: 64px;
+    width: calc(100vw - 64px - 20px);
+    height: calc(100vh - 20px);
+    z-index: 100;
+}
+
+.toast-body {
+    font-size: 18px;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

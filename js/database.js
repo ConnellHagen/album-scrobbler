@@ -145,7 +145,8 @@ class Database {
         // if there are no rows returned, row.Artist is falsey
         if (!row.Artist) {
             return null;
-        } else {
+        }
+        else {
             return row;
         }
     }
@@ -167,7 +168,8 @@ class Database {
         // if there are no rows returned, row.Artist is falsey
         if (!row.Artist) {
             return null;
-        } else {
+        }
+        else {
             return row;
         }
     }
@@ -188,7 +190,8 @@ class Database {
         // if there are no rows returned, row.Artist is falsey
         if (!row.Artist) {  
             return null;
-        } else {
+        }
+        else {
             return row;
         }
     }

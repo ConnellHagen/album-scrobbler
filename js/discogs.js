@@ -11,19 +11,20 @@ class Discogs {
         if (token) {
             this.discogs = new Disconnect({
                 userToken: token,
-                userAgent: "AlbumScrobbler/0.2.4"
+                userAgent: "AlbumScrobbler/0.3.0"
             });
-        } else {
-            this.discogs = new Disconnect("AlbumScrobbler/0.2.4");
+        }
+        else {
+            this.discogs = new Disconnect("AlbumScrobbler/0.3.0");
         }
         this.db = this.discogs.database();
     }
 
     async setPersonalAccessToken(token) {
-        console.log("token:", token);
         if (!token) {
             await keytar.deletePassword("AlbumScrobbler", "DiscogsToken");
-        } else {
+        }
+        else {
             await keytar.setPassword("AlbumScrobbler", "DiscogsToken", token);
         }
         this.createAuthConnection();
@@ -36,6 +37,10 @@ class Discogs {
     async searchByQuery(query) {
         await this.initPromise;
 
+        if (!await keytar.getPassword("AlbumScrobbler", "DiscogsToken")) {
+            throw new Error("Missing Discogs Credentials. Please add API Keys.");
+        }
+
         let params = {
             type: "master",
             format: "album",
@@ -47,7 +52,8 @@ class Discogs {
             this.db.search(query, params, (err, data) => {
                 if (err) {
                     reject(err);
-                } else {
+                }
+                else {
                     resolve(data);
                 }
             });
@@ -57,11 +63,16 @@ class Discogs {
     async getMaster(masterId) {
         await this.initPromise;
 
+        if (!await keytar.getPassword("AlbumScrobbler", "DiscogsToken")) {
+            throw new Error("Missing Discogs Credentials. Please add API Keys.");
+        }
+
         return new Promise((resolve, reject) => {
             this.db.getMaster(masterId, (err, data) => {
                 if (err) {
                     reject(err);
-                } else {
+                }
+                else {
                     resolve(data);
                 }
             });
