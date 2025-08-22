@@ -167,7 +167,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const apiSecret = $("lastfm-secret-input").value;
         window.lastfm.setAPIKey(apiKey);
         window.lastfm.setAPISecret(apiSecret);
-        createToast("Discogs token saved successfully.", DEFAULT_COLOR);
+        createToast("Last.fm keys saved successfully.", DEFAULT_COLOR);
     });
 
     $("discogs-key-reset-btn").addEventListener("click", async (event) => {

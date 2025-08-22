@@ -10,12 +10,12 @@
 - [ ] Setup executable/installer/updater
 
 ### Error messages/handling:
-- [ ] Missing Lastfm Credentials
-- [ ] Missing Discogs credentials
-- [ ] Failed to scrobble
-- [ ] Failed to retrieve from Discogs
-- [ ] Failed to save to database
-- [ ] Success message when API key saved
+- [x] Missing Lastfm Credentials
+- [x] Missing Discogs credentials
+- [x] Failed to scrobble
+- [x] Failed to retrieve from Discogs
+- [x] Failed to save to database
+- [x] Success message when API key saved
 
 ## Future
 - [ ] Notification on API Keys tab when lastfm key not entered
