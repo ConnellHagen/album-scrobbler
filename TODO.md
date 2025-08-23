@@ -7,7 +7,7 @@
 - [x] Delete albums from collection grid
 - [x] Edit albums in collection grid
 - [ ] Release-ready README
-- [ ] Setup executable/installer/updater
+- [x] Setup executable/installer/updater
 
 ### Error messages/handling:
 - [x] Missing Lastfm Credentials
