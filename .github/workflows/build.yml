@@ -20,8 +20,24 @@ jobs:
         with:
           node-version: '24.5.0'
 
+      - name: Install sharp for platform
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            npm install --cpu=x64 --os=darwin sharp
+            npm install --cpu=arm64 --os=darwin sharp
+          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            npm install --cpu=x64 --os=linux --libc=glibc sharp
+            npm install --cpu=x64 --os=linux --libc=musl sharp
+          fi
       - name: Install dependencies
         run: npm install
+
+      - name: Clean install for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          del package-lock.json
+          rmdir /s /q node_modules
+          npm install
 
       - name: Build Electron app
         run: |
