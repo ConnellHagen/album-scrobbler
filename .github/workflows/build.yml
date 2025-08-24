@@ -18,26 +18,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.5.0'
+          node-version: '24.5.0' 
 
-      - name: Install sharp for platform
+      - name: Clean install for platform
+        shell: bash
         run: |
+          rm -rf node_modules package-lock.json
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             npm install --cpu=x64 --os=darwin sharp
             npm install --cpu=arm64 --os=darwin sharp
+            npm install
           elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             npm install --cpu=x64 --os=linux --libc=glibc sharp
             npm install --cpu=x64 --os=linux --libc=musl sharp
+            npm install
+          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
+            npm install
           fi
-      - name: Install dependencies
-        run: npm install
-
-      - name: Clean install for Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          del package-lock.json
-          rmdir /s /q node_modules
-          npm install
 
       - name: Build Electron app
         run: |
